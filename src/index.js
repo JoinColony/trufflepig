@@ -10,6 +10,7 @@ type CacheOptions = {
 };
 
 type ServerOptions = {
+  api?: string,
   port?: number,
   verbose?: boolean,
 };
@@ -30,16 +31,18 @@ const API = '/contracts';
 const DEFAULT_PORT = 3030;
 
 export default class TrufflePig {
+  _api: string;
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
-  constructor({ paths = [], port = DEFAULT_PORT, verbose = false }: Options) {
+  constructor({ paths = [], port = DEFAULT_PORT, api = API, verbose = false }: Options) {
     this.createCache({ paths, verbose });
     this.createServer({ port, verbose });
+    this._api = api;
   }
   apiUrl(): string {
     const { address, port } = this._listener.address();
-    return `//${address}:${port}/${API}`;
+    return `//${address}:${port}/${this._api}`;
   }
   createCache({ paths, verbose }: CacheOptions) {
     this._cache = new TrufflePigCache({ paths, verbose });
@@ -63,7 +66,7 @@ export default class TrufflePig {
   createServer({ port = DEFAULT_PORT, verbose }: ServerOptions) {
     this._server = express();
 
-    this._server.get(API, ({ query }: $Request, res: $Response) => {
+    this._server.get(this._api, ({ query }: $Request, res: $Response) => {
       if (Object.keys(query).length > 0) {
         const contract = this._cache.findContract(query);
 
