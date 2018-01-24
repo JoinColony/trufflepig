@@ -1,5 +1,5 @@
 [ignore]
-
+.*\.flow$
 [include]
 
 [libs]
@@ -8,6 +8,5 @@
 
 [options]
 module.ignore_non_literal_requires=true
-experimental.enable_simple_getters=true
 
 [strict]

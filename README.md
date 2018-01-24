@@ -13,7 +13,7 @@ Installation
 Install as a devDependency to your project:
 
 ```shell
-$ npm install trufflepig --save-dev
+$ yarn add trufflepig --dev
 ```
 
 

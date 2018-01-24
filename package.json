@@ -7,7 +7,7 @@
     "build": "yarn run build:lib && yarn run build:flow",
     "build:flow": "flow-copy-source src lib --ignore '__tests__/*.js'",
     "build:lib": "babel src --out-dir lib --ignore __tests__",
-    "flow": "flow src",
+    "flow": "flow check",
     "lint": "run(){ eslint --ignore-pattern=**/{node_modules,lib}/* --fix ${@:-\"./src/{,**/}*.js\"}; }; run",
     "precommit": "lint-staged",
     "test": "yarn run lint"
@@ -32,7 +32,7 @@
     "flow-copy-source": "^1.2.1"
   },
   "devDependencies": {
-    "@colony/eslint-config-colony": "^1.0.3",
+    "@colony/eslint-config-colony": "^2.1.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.2",
@@ -45,7 +45,7 @@
     "eslint-plugin-flowtype": "^2.41.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-prettier": "^2.4.0",
-    "flow-bin": "^0.59.0",
+    "flow-bin": "0.63.1",
     "husky": "^0.14.3",
     "lint-staged": "^6.0.0",
     "prettier": "^1.10.2"

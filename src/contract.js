@@ -14,19 +14,19 @@ export default class TrufflePigContract {
     this._path = path;
     this._artifact = artifact;
   }
-  get abi() {
+  get abi(): Object {
     return this._artifact.abi;
   }
-  get artifact() {
+  get artifact(): Artifact {
     return this._artifact;
   }
-  get isDeployed() {
+  get isDeployed(): boolean {
     return Object.keys(this._artifact.networks || {}).length > 0;
   }
-  get name() {
+  get name(): string {
     return this._artifact.contractName;
   }
-  get path() {
+  get path(): string {
     return this._path;
   }
 }

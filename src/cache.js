@@ -1,34 +1,42 @@
 /* @flow */
 
-import fs from 'fs';
+import { readFile } from 'fs';
+import { promisify } from 'util';
 import chokidar from 'chokidar';
 import EventEmitter from 'events';
 import TrufflePigContract from './contract';
 
 type Contracts = Map<string, TrufflePigContract>;
 
+type Query = {
+  isDeployed?: string | Array<string>,
+  name?: string | Array<string>,
+};
+
 export default class TrufflePigCache extends EventEmitter {
   _contracts: Contracts;
   _watcher: any;
 
-  static contractMatchesQuery(contract: TrufflePigContract, query: {}): boolean {
-    return Object.keys(query).every(key => {
-      let value = query[key];
-      if (value === 'true') {
-        value = true;
-      } else if (value === 'false') {
-        value = false;
-      }
-      return contract[key] === value;
-    });
+  static contractMatchesQuery(contract: TrufflePigContract, query: Query): boolean {
+    // TODO: something with version?
+    if (query.name === contract.name && query.isDeployed === contract.isDeployed) {
+      return true;
+    }
+    return false;
   }
-  static async parseContract(path: string): TrufflePigContract {
-    const artifact = JSON.parse(
-      await new Promise((resolve, reject) => {
-        fs.readFile(path, (error, body) => (error ? reject(error) : resolve(body)));
-      })
-    );
-    return new TrufflePigContract(path, artifact);
+  static async readContractFile(path: string): Promise<TrufflePigContract | void> {
+    let contents: string;
+    try {
+      contents = await promisify(readFile)(path);
+    } catch (e) {
+      console.error(`Could not read file: ${path}`);
+      return;
+    }
+    try {
+      return new TrufflePigContract(path, JSON.parse(contents));
+    } catch (e) {
+      console.error(`Could not parse file: ${path}`);
+    }
   }
   constructor({ paths }: { paths: Array<string> }) {
     super();
@@ -42,16 +50,26 @@ export default class TrufflePigCache extends EventEmitter {
       .on('error', error => this.emit('error', error))
       .on('unlink', path => this.remove(path));
   }
-  async add(path: string) {
+  async add(path: string): Promise<void> {
     if (this._contracts.has(path)) return;
-    this._contracts.set(path, await this.constructor.parseContract(path));
-    this.emit('add', path);
+    const contract = await TrufflePigCache.readContractFile(path);
+    if (contract) {
+      this._contracts.set(path, contract);
+      this.emit('add', path);
+    }
   }
-  async change(path: string) {
-    this._contracts.set(path, await this.constructor.parseContract(path));
-    this.emit('change', path);
+  async change(path: string): Promise<void> {
+    if (!this._contracts.has(path)) {
+      console.error(`Can not change non existing path ${path}`);
+      return;
+    }
+    const contract = await TrufflePigCache.readContractFile(path);
+    if (contract) {
+      this._contracts.set(path, contract);
+      this.emit('change', path);
+    }
   }
-  remove(path: string) {
+  remove(path: string): void {
     this._contracts.delete(path);
     this.emit('remove', path);
   }
@@ -60,10 +78,10 @@ export default class TrufflePigCache extends EventEmitter {
       contractNames: [...this._contracts.values()].map(contract => contract.name),
     };
   }
-  findContracts(query: {}) {
-    return [...this._contracts.values()].find(contract => this.constructor.contractMatchesQuery(contract, query)).map(contract => contract.artifact);
+  findContracts(query: Query) {
+    return [...this._contracts.values()].filter(contract => TrufflePigCache.contractMatchesQuery(contract, query)).map(contract => contract.artifact);
   }
-  findContract(query: {}) {
-    return [...this._contracts.values()].find(contract => this.constructor.contractMatchesQuery(contract, query))[0];
+  findContract(query: Query) {
+    return [...this._contracts.values()].find(contract => TrufflePigCache.contractMatchesQuery(contract, query));
   }
 }
