@@ -19,7 +19,7 @@ export default class TrufflePigCache extends EventEmitter {
 
   static contractMatchesQuery(contract: TrufflePigContract, query: Query): boolean {
     // TODO: something with version?
-    if (query.name === contract.name && query.isDeployed === contract.isDeployed) {
+    if (query.name === contract.name && (query.isDeployed === 'true') === contract.isDeployed) {
       return true;
     }
     return false;
