@@ -6,13 +6,13 @@ import TrufflePigCache from './cache';
 
 type CacheOptions = {
   paths: Array<string>,
-  verbose?: boolean,
+  verbose: boolean,
 };
 
 type ServerOptions = {
-  api?: string,
-  port?: number,
-  verbose?: boolean,
+  endpoint: string,
+  port: number,
+  verbose: boolean,
 };
 
 // Because of https://github.com/facebook/flow/issues/5113
@@ -27,24 +27,31 @@ type Server = {
 
 export type Options = CacheOptions & ServerOptions;
 
-const API = '/contracts';
+const DEFAULT_ENDPOINT = 'contracts';
 const DEFAULT_PORT = 3030;
 
 export default class TrufflePig {
-  _api: string;
+  _options: Options;
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
-  constructor({ paths = [], port = DEFAULT_PORT, api = API, verbose = false }: Options) {
-    this.createCache({ paths, verbose });
-    this.createServer({ port, verbose });
-    this._api = api;
+  constructor({ paths, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: Options) {
+    if (!paths || paths.length === 0) {
+      throw new Error('Please define a location for the contracts using the "path" option');
+    }
+    this._options = {
+      paths,
+      port,
+      endpoint,
+      verbose,
+    };
   }
   apiUrl(): string {
-    const { address, port } = this._listener.address();
-    return `//${address}:${port}/${this._api}`;
+    const { port } = this._listener.address();
+    return `http://127.0.0.1:${port}/${this._options.endpoint}`;
   }
-  createCache({ paths, verbose }: CacheOptions) {
+  createCache() {
+    const { paths, verbose } = this._options;
     this._cache = new TrufflePigCache({ paths, verbose });
 
     this._cache.on('add', path => {
@@ -63,10 +70,11 @@ export default class TrufflePig {
       if (verbose) console.log(`TrufflePig: Error from cache: ${error.message || error.stack}`);
     });
   }
-  createServer({ port = DEFAULT_PORT, verbose }: ServerOptions) {
+  createServer() {
+    const { endpoint, port, verbose } = this._options;
     this._server = express();
 
-    this._server.get(this._api, ({ query }: $Request, res: $Response) => {
+    this._server.get(endpoint, ({ query }: $Request, res: $Response) => {
       if (Object.keys(query).length > 0) {
         const contract = this._cache.findContract(query);
 
@@ -78,7 +86,11 @@ export default class TrufflePig {
     });
 
     this._listener = this._server.listen(port, () => {
-      if (verbose) console.log(`TrufflePig: Server listening on ${port.toString()}`);
+      if (verbose) console.log(`TrufflePig: Server listening on ${this.apiUrl()}`);
     });
+  }
+  start() {
+    this.createCache();
+    this.createServer();
   }
 }
