@@ -54,8 +54,12 @@
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-prettier": "^2.4.0",
     "flow-bin": "0.64.0",
+    "ganache-cli": "^6.0.3",
     "husky": "^0.14.3",
     "lint-staged": "^6.0.0",
     "prettier": "^1.10.2"
+  },
+  "peerDependencies": {
+    "ganache-cli": "^6.0.3"
   }
 }
