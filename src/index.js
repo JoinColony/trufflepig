@@ -36,13 +36,10 @@ export default class TrufflePig extends EventEmitter {
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
-  constructor({ paths, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: Options) {
+  constructor({ contractDir, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: Options) {
     super();
-    if (!paths || paths.length === 0) {
-      throw new Error('Please define a location for the contracts using the "path" option');
-    }
     this._options = {
-      paths,
+      contractDir,
       port,
       endpoint,
       verbose,
@@ -53,8 +50,8 @@ export default class TrufflePig extends EventEmitter {
     return `http://127.0.0.1:${port}/${this._options.endpoint}`;
   }
   createCache() {
-    const { paths, verbose } = this._options;
-    this._cache = new TrufflePigCache({ paths, verbose });
+    const { contractDir, verbose } = this._options;
+    this._cache = new TrufflePigCache({ paths: [contractDir], verbose });
 
     this._cache.on('add', path => {
       if (verbose) this.emit('log', `Cache added: ${path}`);
@@ -69,30 +66,31 @@ export default class TrufflePig extends EventEmitter {
     });
 
     this._cache.on('error', error => {
-      if (verbose) this.emit('log', `Error from cache: ${error.message || error.stack}`);
+      if (verbose) this.emit('error', error);
     });
   }
   createServer() {
     const { endpoint, port, verbose } = this._options;
     this._server = express();
-
-    this._server.get(endpoint, ({ query }: $Request, res: $Response) => {
+    this._server.get(`/${endpoint}`, ({ query }: $Request, res: $Response) => {
       if (Object.keys(query).length > 0) {
         const contract = this._cache.findContract(query);
-
-        if (verbose && !contract) this.emit('log', `Unable to find contract matching query ${JSON.stringify(query)}`);
-
+        if (verbose && !contract) this.emit('error', new Error(`Unable to find contract matching query ${JSON.stringify(query)}`));
         return res.json(contract || {});
       }
       return res.json(this._cache.contractNames());
     });
 
     this._listener = this._server.listen(port, () => {
-      if (verbose) this.emit('log', `Server listening on ${this.apiUrl()}`);
+      if (verbose) this.emit('ready', port);
     });
   }
-  start() {
+  start(): void {
     this.createCache();
     this.createServer();
+  }
+  close(): void {
+    this._listener.close();
+    this._cache.close();
   }
 }

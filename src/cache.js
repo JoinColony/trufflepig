@@ -69,6 +69,9 @@ export default class TrufflePigCache extends EventEmitter {
       this.emit('change', path);
     }
   }
+  close(): void {
+    this._watcher.close();
+  }
   remove(path: string): void {
     this._contracts.delete(path);
     this.emit('remove', path);
