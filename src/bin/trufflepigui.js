@@ -68,6 +68,7 @@ class TrufflePigUI {
         this.update();
       }
     });
+    process.on('SIGINT', () => console.log('Life is a pigsty 🎵'));
   }
   async deployContracts() {
     this.spawn('truffle', ['migrate', '--reset', '--compile-all'], 'ignore');
@@ -76,6 +77,7 @@ class TrufflePigUI {
     this.spawn('truffle', ['console'], 'inherit');
   }
   async close() {
+    this.update('message', "Shutting down gracefully... (Press CTRL+C if you're impatient)");
     if (this._ganache && this._ganache.listening) {
       this._ganache.close();
     }
@@ -107,5 +109,4 @@ class TrufflePigUI {
     printMainMenu(this._status, this._config);
   }
 }
-
 export default TrufflePigUI;
