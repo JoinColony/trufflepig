@@ -1,6 +1,7 @@
 /* @flow */
 
 import express from 'express';
+import EventEmitter from 'events';
 import type { $Application, $Request, $Response } from 'express';
 import TrufflePigCache from './cache';
 
@@ -30,12 +31,13 @@ export type Options = CacheOptions & ServerOptions;
 const DEFAULT_ENDPOINT = 'contracts';
 const DEFAULT_PORT = 3030;
 
-export default class TrufflePig {
+export default class TrufflePig extends EventEmitter {
   _options: Options;
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
   constructor({ paths, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: Options) {
+    super();
     if (!paths || paths.length === 0) {
       throw new Error('Please define a location for the contracts using the "path" option');
     }
@@ -55,19 +57,19 @@ export default class TrufflePig {
     this._cache = new TrufflePigCache({ paths, verbose });
 
     this._cache.on('add', path => {
-      if (verbose) console.log(`TrufflePig: Cache added: ${path}`);
+      if (verbose) this.emit('log', `Cache added: ${path}`);
     });
 
     this._cache.on('change', path => {
-      if (verbose) console.log(`TrufflePig: Cache changed: ${path}`);
+      if (verbose) this.emit('log', `Cache changed: ${path}`);
     });
 
     this._cache.on('remove', path => {
-      if (verbose) console.log(`TrufflePig: Cache removed: ${path}`);
+      if (verbose) this.emit('log', `Cache removed: ${path}`);
     });
 
     this._cache.on('error', error => {
-      if (verbose) console.log(`TrufflePig: Error from cache: ${error.message || error.stack}`);
+      if (verbose) this.emit('log', `Error from cache: ${error.message || error.stack}`);
     });
   }
   createServer() {
@@ -78,7 +80,7 @@ export default class TrufflePig {
       if (Object.keys(query).length > 0) {
         const contract = this._cache.findContract(query);
 
-        if (verbose && !contract) console.log(`TrufflePig: Unable to find contract matching query ${JSON.stringify(query)}`);
+        if (verbose && !contract) this.emit('log', `Unable to find contract matching query ${JSON.stringify(query)}`);
 
         return res.json(contract || {});
       }
@@ -86,7 +88,7 @@ export default class TrufflePig {
     });
 
     this._listener = this._server.listen(port, () => {
-      if (verbose) console.log(`TrufflePig: Server listening on ${this.apiUrl()}`);
+      if (verbose) this.emit('log', `Server listening on ${this.apiUrl()}`);
     });
   }
   start() {

@@ -24,18 +24,18 @@ export default class TrufflePigCache extends EventEmitter {
     }
     return false;
   }
-  static async readContractFile(path: string): Promise<TrufflePigContract | void> {
+  async readContractFile(path: string): Promise<TrufflePigContract | void> {
     let contents: string;
     try {
       contents = await promisify(readFile)(path);
     } catch (e) {
-      console.error(`Could not read file: ${path}`);
+      this.emit('error', `Could not read file: ${path}`);
       return;
     }
     try {
       return new TrufflePigContract(path, JSON.parse(contents));
     } catch (e) {
-      console.error(`Could not parse file: ${path}`);
+      this.emit('error', `Could not parse file: ${path}`);
     }
   }
   constructor({ paths }: { paths: Array<string> }) {
@@ -52,7 +52,7 @@ export default class TrufflePigCache extends EventEmitter {
   }
   async add(path: string): Promise<void> {
     if (this._contracts.has(path)) return;
-    const contract = await TrufflePigCache.readContractFile(path);
+    const contract = await this.readContractFile(path);
     if (contract) {
       this._contracts.set(path, contract);
       this.emit('add', path);
@@ -60,10 +60,10 @@ export default class TrufflePigCache extends EventEmitter {
   }
   async change(path: string): Promise<void> {
     if (!this._contracts.has(path)) {
-      console.error(`Can not change non existing path ${path}`);
+      this.emit('error', `Can not change non existing path ${path}`);
       return;
     }
-    const contract = await TrufflePigCache.readContractFile(path);
+    const contract = await this.readContractFile(path);
     if (contract) {
       this._contracts.set(path, contract);
       this.emit('change', path);
