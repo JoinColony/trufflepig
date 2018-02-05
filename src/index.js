@@ -69,7 +69,7 @@ export default class TrufflePig extends EventEmitter {
       if (verbose) this.emit('error', error);
     });
   }
-  createServer() {
+  createServer(ganacheConfig) {
     const { endpoint, port, verbose } = this._options;
     this._server = express();
     this._server.get(`/${endpoint}`, ({ query }: $Request, res: $Response) => {
@@ -80,14 +80,17 @@ export default class TrufflePig extends EventEmitter {
       }
       return res.json(this._cache.contractNames());
     });
+    this._server.get('/_config', (req: $Request, res: $Response) => {
+      res.json(ganacheConfig);
+    });
 
     this._listener = this._server.listen(port, () => {
-      if (verbose) this.emit('ready', port);
+      this.emit('ready', port);
     });
   }
-  start(): void {
+  start(ganacheConfig): void {
     this.createCache();
-    this.createServer();
+    this.createServer(ganacheConfig);
   }
   close(): void {
     this._listener.close();

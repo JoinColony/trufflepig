@@ -2,10 +2,9 @@
 
 import readline from 'readline';
 import { spawn } from 'child_process';
-import ganache from 'ganache-cli';
-import { promisify as pfy } from 'util';
 
 import printMainMenu from './menu';
+import Ganache from '../ganache';
 
 class TrufflePigUI {
   static unhookKeyboard() {
@@ -27,15 +26,22 @@ class TrufflePigUI {
       ganacheListening: false,
     };
     this._pig = pig;
-  }
-  start() {
-    this._ganacheServer = ganache.server();
-    this._ganacheServer.on('error', err => this.update('message', err));
-    this._pig.on('error', err => this.update('message', err));
+    this._ganache = new Ganache({
+      port: this._config.ganachePort,
+    });
+    this._ganache.on('error', err => this.update('message', new Error(`Ganache server error: ${err}`)));
+    this._pig.on('error', err => this.update('message', new Error(`Pig server error: ${err}`)));
     this._pig.on('log', log => this.update('message', log));
+    this._pig.on('ready', () => this.update('pigReady', true));
+  }
+  async start() {
     this.update();
-    this._pig.start();
-    this.startGanache();
+    const ganacheState = await this._ganache.start();
+    if (!ganacheState) {
+      return;
+    }
+    this.update('ganacheReady', true);
+    this._pig.start(ganacheState);
     this.listenToKeyboardEvents();
   }
   listenToKeyboardEvents() {
@@ -49,7 +55,8 @@ class TrufflePigUI {
         this.close();
       }
       if (key.name === 'g') {
-        this.startGanache();
+        this._ganache.start();
+        this.update('message', 'Ganache server restarted successfully');
       }
       if (key.name === 'd') {
         this.deployContracts();
@@ -65,27 +72,12 @@ class TrufflePigUI {
   async deployContracts() {
     this.spawn('truffle', ['migrate', '--reset', '--compile-all'], 'ignore');
   }
-  async startGanache() {
-    if (this._status.ganacheListening) {
-      await pfy(this._ganacheServer.close)();
-    }
-    try {
-      await pfy(this._ganacheServer.listen)(this._config.ganachePort);
-    } catch (e) {
-      this.update('message', e);
-      return false;
-    }
-    this.update('message', null);
-    this.update('ganacheListening', true);
-    this.update('message', 'Ganache server (re-)started successully');
-    return true;
-  }
   spawnTruffleConsole() {
     this.spawn('truffle', ['console'], 'inherit');
   }
   async close() {
-    if (this._ganacheServer.listening) {
-      await pfy(this._ganacheServer.close)();
+    if (this._ganache && this._ganache.listening) {
+      this._ganache.close();
     }
     this._pig.close();
     this.constructor.unhookKeyboard();
@@ -96,6 +88,10 @@ class TrufflePigUI {
     this.update('message', `Running ${cmd}...`);
     const proc = spawn(`node_modules/.bin/${bin}`, args, {
       stdio: stdio || 'inherit',
+    });
+    proc.on('error', err => {
+      this.constructor.hookKeyboard();
+      this.update('message', new Error(`Could not spawn ${cmd}: ${err.message}`));
     });
     proc.on('exit', code => {
       this.constructor.hookKeyboard();
