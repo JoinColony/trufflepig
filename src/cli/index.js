@@ -1,3 +1,5 @@
+/* @flow */
+
 import yargs from 'yargs';
 
 import TrufflePigUI from './trufflepigui';

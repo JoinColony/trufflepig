@@ -3,46 +3,19 @@
 import express from 'express';
 import EventEmitter from 'events';
 import type { $Application, $Request, $Response } from 'express';
+import type { GanacheState, Server, TPOptions } from './flowtypes';
 import TrufflePigCache from './cache';
-
-type CacheOptions = {
-  contractDir: string,
-  verbose: boolean,
-};
-
-type ServerOptions = {
-  endpoint: string,
-  port: number,
-  verbose: boolean,
-};
-
-// Because of https://github.com/facebook/flow/issues/5113
-type Server = {
-  address: () => {
-    address: string,
-    family: string,
-    port: number,
-  },
-  listen: () => Server,
-  close: () => void,
-};
-
-type GanacheState = {
-  accounts?: Array<{ address: string, key: string }>,
-};
-
-export type Options = CacheOptions & ServerOptions;
 
 const DEFAULT_ENDPOINT = 'contracts';
 const DEFAULT_PORT = 3030;
 
 export default class TrufflePig extends EventEmitter {
-  _options: Options;
+  _options: TPOptions;
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
   _ganacheState: GanacheState;
-  constructor({ contractDir, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: Options) {
+  constructor({ contractDir, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: TPOptions) {
     super();
     this._options = {
       contractDir,
@@ -105,7 +78,7 @@ export default class TrufflePig extends EventEmitter {
   setGanacheState(state: GanacheState): void {
     this._ganacheState = state;
   }
-  getConfig(): Options & { apiUrl: string } {
+  getConfig(): TPOptions & { apiUrl: string } {
     return Object.assign({}, this._options, { apiUrl: this.apiUrl() });
   }
 }

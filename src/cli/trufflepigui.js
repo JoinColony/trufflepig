@@ -3,20 +3,42 @@
 import readline from 'readline';
 import { spawn } from 'child_process';
 
+import type { GanacheOptions, TPOptions } from '../flowtypes';
+
 import Ganache from './ganache';
 import printMainMenu from './menu';
 import TrufflePig from '../';
 
+export type Status = {
+  message: string,
+  apiUrl: string,
+  ganacheListening: boolean,
+};
+
+export type Config = {
+  ganacheOpts: GanacheOptions,
+  trufflePigOpts: TPOptions,
+};
+
 class TrufflePigUI {
-  static unhookKeyboard() {
-    process.stdin.pause();
-    process.stdin.setRawMode(false);
+  _status: Status;
+  _config: Config;
+  _ganache: Ganache;
+  _pig: TrufflePig;
+  static setRawMode(enabled: boolean) {
+    if (process.stdin.isTTY) {
+      (process.stdin: any).setRawMode(enabled);
+    }
   }
-  static hookKeyboard() {
-    process.stdin.setRawMode(true);
+  static unhookKeyboard(): void {
+    process.stdin.pause();
+    TrufflePigUI.setRawMode(false);
+  }
+  static hookKeyboard(): void {
+    TrufflePigUI.setRawMode(true);
     process.stdin.resume();
   }
-  constructor(pigConfig, ganacheConfig = {}) {
+  constructor(pigConfig: TPOptions, ganacheConfig: GanacheOptions = {}) {
     this._status = {
       message: '',
       apiUrl: '',
@@ -24,7 +46,7 @@ class TrufflePigUI {
     };
     this._config = {
       ganacheOpts: Object.assign({ port: 8545 }, ganacheConfig),
-      trufflePigOpts: Object.assign({}, pigConfig),
+      trufflePigOpts: pigConfig,
     };
     this.setupServices();
   }
@@ -55,7 +77,7 @@ class TrufflePigUI {
     this._pig.close();
     this.constructor.unhookKeyboard();
   }
-  spawn(bin, args, stdio) {
+  spawn(bin: string, args: Array<string>, stdio: Array<string> | string) {
     this.constructor.unhookKeyboard();
     const cmd = `${bin} ${args.join(' ')}`;
     this.update('message', `Running ${cmd}...`);
@@ -75,13 +97,15 @@ class TrufflePigUI {
       return this.update('message', msg);
     });
   }
-  update(status, val) {
-    this._status[status] = val;
+  update(status?: string, val?: any) {
+    if (status) {
+      this._status[status] = val;
+    }
     printMainMenu(this._status, this._config);
   }
   listenToKeyboardEvents() {
     readline.emitKeypressEvents(process.stdin);
-    process.stdin.setRawMode(true);
+    TrufflePigUI.setRawMode(true);
     process.stdin.on('keypress', async (str, key) => {
       if (!key) {
         return;
