@@ -3,8 +3,9 @@
 import readline from 'readline';
 import { spawn } from 'child_process';
 
+import Ganache from './ganache';
 import printMainMenu from './menu';
-import Ganache from '../ganache';
+import TrufflePig from '../';
 
 class TrufflePigUI {
   static unhookKeyboard() {
@@ -15,27 +16,25 @@ class TrufflePigUI {
     process.stdin.setRawMode(true);
     process.stdin.resume();
   }
-  constructor(pig, config) {
+  constructor(pigConfig, ganacheConfig = {}) {
     this._status = {
       message: '',
+      apiUrl: '',
       ganacheListening: false,
     };
-    this._pig = pig;
-    this._config = Object.assign(
-      {},
-      pig.getConfig(),
-      {
-        ganacheOpts: { port: 8545 },
-      },
-      config
-    );
-    this._ganache = new Ganache({
-      port: this._config.ganachePort,
-    });
+    this._config = {
+      ganacheOpts: Object.assign({ port: 8545 }, ganacheConfig),
+      trufflePigOpts: Object.assign({}, pigConfig),
+    };
+    this.setupServices();
+  }
+  setupServices() {
+    this._ganache = new Ganache(this._config.ganacheOpts);
+    this._pig = new TrufflePig(this._config.trufflePigOpts);
     this._ganache.on('error', err => this.update('message', new Error(`Ganache server error: ${err}`)));
     this._pig.on('error', err => this.update('message', new Error(`Pig server error: ${err}`)));
     this._pig.on('log', log => this.update('message', log));
-    this._pig.on('ready', () => this.update('pigReady', true));
+    this._pig.on('ready', apiUrl => this.update('apiUrl', apiUrl));
   }
   async start() {
     this.update();
@@ -47,6 +46,38 @@ class TrufflePigUI {
     this._pig.setGanacheState(ganacheState);
     this._pig.start();
     this.listenToKeyboardEvents();
+  }
+  async close() {
+    this.update('message', "Shutting down gracefully... (Press CTRL+C if you're impatient)");
+    if (this._ganache && this._ganache.listening) {
+      this._ganache.close();
+    }
+    this._pig.close();
+    this.constructor.unhookKeyboard();
+  }
+  spawn(bin, args, stdio) {
+    this.constructor.unhookKeyboard();
+    const cmd = `${bin} ${args.join(' ')}`;
+    this.update('message', `Running ${cmd}...`);
+    const proc = spawn(`node_modules/.bin/${bin}`, args, {
+      stdio: stdio || 'inherit',
+    });
+    proc.on('error', err => {
+      this.constructor.hookKeyboard();
+      this.update('message', new Error(`Could not spawn ${cmd}: ${err.message}`));
+    });
+    proc.on('exit', code => {
+      this.constructor.hookKeyboard();
+      const msg = `${cmd} exited with code ${code}`;
+      if (code > 0) {
+        return this.update('message', new Error(msg));
+      }
+      return this.update('message', msg);
+    });
+  }
+  update(status, val) {
+    this._status[status] = val;
+    printMainMenu(this._status, this._config);
   }
   listenToKeyboardEvents() {
     readline.emitKeypressEvents(process.stdin);
@@ -80,38 +111,6 @@ class TrufflePigUI {
   }
   spawnTruffleConsole() {
     this.spawn('truffle', ['console'], 'inherit');
-  }
-  async close() {
-    this.update('message', "Shutting down gracefully... (Press CTRL+C if you're impatient)");
-    if (this._ganache && this._ganache.listening) {
-      this._ganache.close();
-    }
-    this._pig.close();
-    this.constructor.unhookKeyboard();
-  }
-  spawn(bin, args, stdio) {
-    this.constructor.unhookKeyboard();
-    const cmd = `${bin} ${args.join(' ')}`;
-    this.update('message', `Running ${cmd}...`);
-    const proc = spawn(`node_modules/.bin/${bin}`, args, {
-      stdio: stdio || 'inherit',
-    });
-    proc.on('error', err => {
-      this.constructor.hookKeyboard();
-      this.update('message', new Error(`Could not spawn ${cmd}: ${err.message}`));
-    });
-    proc.on('exit', code => {
-      this.constructor.hookKeyboard();
-      const msg = `${cmd} exited with code ${code}`;
-      if (code > 0) {
-        return this.update('message', new Error(msg));
-      }
-      return this.update('message', msg);
-    });
-  }
-  update(status, val) {
-    this._status[status] = val;
-    printMainMenu(this._status, this._config);
   }
 }
 export default TrufflePigUI;

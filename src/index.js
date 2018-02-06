@@ -91,7 +91,7 @@ export default class TrufflePig extends EventEmitter {
     });
 
     this._listener = this._server.listen(port, () => {
-      this.emit('ready', port);
+      this.emit('ready', this.apiUrl());
     });
   }
   start(): void {

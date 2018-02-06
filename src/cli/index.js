@@ -1,8 +1,6 @@
-/* @flow */
-
 import yargs from 'yargs';
-import TrufflePig from '.';
-import TrufflePigUI from './bin/trufflepigui';
+
+import TrufflePigUI from './trufflepigui';
 
 const args = yargs
   .usage('$0 path/to/my/contracts [another/path, ...]')
@@ -34,13 +32,11 @@ const args = yargs
   })
   .parse();
 
-const pig = new TrufflePig({
+const pig = new TrufflePigUI({
   contractDir: String(args.contractDir),
   port: parseInt(args.port, 10),
   endpoint: String(args.endpoint),
   verbose: !!args.verbose,
 });
 
-const cli = new TrufflePigUI(pig);
-
-cli.start();
+pig.start();

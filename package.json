@@ -11,7 +11,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "yarn run build:lib && yarn run build:flow",
+    "build": "rm -rf lib && yarn run build:lib && yarn run build:flow",
     "build:flow": "flow-copy-source src lib --ignore '__tests__/*.js'",
     "build:lib": "babel src --out-dir lib",
     "flow": "flow check",

@@ -7,9 +7,9 @@ import { promisify as pfy } from 'util';
 class GanacheWrapper extends EventEmitter {
   constructor(options) {
     super();
-    this._options = options;
+    this._config = options;
     this._port = options.port || 8545;
-    this._ganache = ganache.server(this._options);
+    this._ganache = ganache.server(this._config);
     this._ganache.on('error', err => this.emit('error', err.message));
   }
   get listening() {
@@ -30,7 +30,7 @@ class GanacheWrapper extends EventEmitter {
       this._ganache.close();
     }
     try {
-      this._ganache = ganache.server(this._options);
+      this._ganache = ganache.server(this._config);
       await pfy(this._ganache.listen)(this._port);
     } catch (e) {
       return this.emit('error', e.message);

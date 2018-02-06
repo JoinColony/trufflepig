@@ -9,14 +9,14 @@ const p = chalk.hex('#f28fb1');
 
 const printMainMenu = (status, config) => {
   const ganacheStatus = status.ganacheReady ? `started on port ${b(config.ganacheOpts.port)}` : 'not started';
-  const pigStatus = status.pigReady ? `serving contracts at ${b(config.apiUrl)}` : 'initializing...';
+  const pigStatus = status.apiUrl ? `serving contracts at ${b(status.apiUrl)}` : 'initializing...';
   const statusMsg = status.message instanceof Error ? r(`ERROR: ${status.message.message}`) : g(status.message);
 
   console.log('\x1Bc'); // clear screen
   console.log(`
     ${p('TRUFFLEPIG')} - Serving finest truffles since 2017
     -----------------------------------------------
-    Reading contracts from ${b(config.contractDir)}
+    Reading contracts from ${b(config.trufflePigOpts.contractDir)}
     Pig ${pigStatus}
     Ganache server ${ganacheStatus}
   `);
