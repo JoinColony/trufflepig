@@ -41,13 +41,14 @@ class TrufflePigUI {
       return;
     }
     this.update('ganacheReady', true);
-    this._pig.start(ganacheState);
+    this._pig.setGanacheState(ganacheState);
+    this._pig.start();
     this.listenToKeyboardEvents();
   }
   listenToKeyboardEvents() {
     readline.emitKeypressEvents(process.stdin);
     process.stdin.setRawMode(true);
-    process.stdin.on('keypress', (str, key) => {
+    process.stdin.on('keypress', async (str, key) => {
       if (!key) {
         return;
       }
@@ -55,7 +56,8 @@ class TrufflePigUI {
         this.close();
       }
       if (key.name === 'g') {
-        this._ganache.start();
+        const state = await this._ganache.start();
+        this._pig.setGanacheState(state);
         this.update('message', 'Ganache server restarted successfully');
       }
       if (key.name === 'd') {

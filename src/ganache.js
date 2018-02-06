@@ -7,8 +7,9 @@ import { promisify as pfy } from 'util';
 class GanacheWrapper extends EventEmitter {
   constructor(options) {
     super();
+    this._options = options;
     this._port = options.port || 8545;
-    this._ganache = ganache.server(options);
+    this._ganache = ganache.server(this._options);
     this._ganache.on('error', err => this.emit('error', err.message));
   }
   get listening() {
@@ -16,16 +17,20 @@ class GanacheWrapper extends EventEmitter {
   }
   get state() {
     const { accounts } = this._ganache.provider.manager.state;
-    return Object.keys(accounts).map(account => ({
+    const mappedAccounts = Object.keys(accounts).map(account => ({
       address: account,
       key: accounts[account].secretKey.toString('hex'),
     }));
+    return {
+      accounts: mappedAccounts,
+    };
   }
   async start() {
     if (this.listening) {
       this._ganache.close();
     }
     try {
+      this._ganache = ganache.server(this._options);
       await pfy(this._ganache.listen)(this._port);
     } catch (e) {
       return this.emit('error', e.message);

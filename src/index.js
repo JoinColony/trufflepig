@@ -24,6 +24,11 @@ type Server = {
     port: number,
   },
   listen: () => Server,
+  close: () => void,
+};
+
+type GanacheState = {
+  accounts?: Array<{ address: string, key: string }>,
 };
 
 export type Options = CacheOptions & ServerOptions;
@@ -36,6 +41,7 @@ export default class TrufflePig extends EventEmitter {
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
+  _ganacheState: GanacheState;
   constructor({ contractDir, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: Options) {
     super();
     this._options = {
@@ -44,6 +50,7 @@ export default class TrufflePig extends EventEmitter {
       endpoint,
       verbose,
     };
+    this._ganacheState = {};
   }
   apiUrl(): string {
     const { port } = this._listener.address();
@@ -69,7 +76,7 @@ export default class TrufflePig extends EventEmitter {
       if (verbose) this.emit('error', error);
     });
   }
-  createServer(ganacheConfig) {
+  createServer() {
     const { endpoint, port, verbose } = this._options;
     this._server = express();
     this._server.get(`/${endpoint}`, ({ query }: $Request, res: $Response) => {
@@ -81,19 +88,22 @@ export default class TrufflePig extends EventEmitter {
       return res.json(this._cache.contractNames());
     });
     this._server.get('/_config', (req: $Request, res: $Response) => {
-      res.json(ganacheConfig);
+      res.json(this._ganacheState);
     });
 
     this._listener = this._server.listen(port, () => {
       this.emit('ready', port);
     });
   }
-  start(ganacheConfig): void {
+  start(): void {
     this.createCache();
-    this.createServer(ganacheConfig);
+    this.createServer();
   }
   close(): void {
     this._listener.close();
     this._cache.close();
+  }
+  setGanacheState(state: GanacheState): void {
+    this._ganacheState = state;
   }
 }
