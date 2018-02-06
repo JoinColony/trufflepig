@@ -15,7 +15,12 @@ export default class TrufflePig extends EventEmitter {
   _server: $Application;
   _cache: TrufflePigCache;
   _ganacheState: GanacheState;
-  constructor({ contractDir, port = DEFAULT_PORT, endpoint = DEFAULT_ENDPOINT, verbose = false }: TPOptions) {
+  constructor({
+    contractDir,
+    port = DEFAULT_PORT,
+    endpoint = DEFAULT_ENDPOINT,
+    verbose = false,
+  }: TPOptions) {
     super();
     this._options = {
       contractDir,
@@ -54,7 +59,13 @@ export default class TrufflePig extends EventEmitter {
     this._server.get(`/${endpoint}`, ({ query }: $Request, res: $Response) => {
       if (Object.keys(query).length > 0) {
         const contract = this._cache.findContract(query);
-        if (verbose && !contract) this.emit('error', new Error(`Unable to find contract matching query ${JSON.stringify(query)}`));
+        if (verbose && !contract)
+          this.emit(
+            'error',
+            new Error(
+              `Unable to find contract matching query ${JSON.stringify(query)}`,
+            ),
+          );
         return res.json(contract || {});
       }
       return res.json(this._cache.contractNames());

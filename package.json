@@ -34,13 +34,14 @@
     ]
   },
   "dependencies": {
+    "chalk": "^2.3.0",
     "chokidar": "^2.0.0",
     "express": "^4.16.2",
     "flow-copy-source": "^1.2.1",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
-    "@colony/eslint-config-colony": "^2.1.0",
+    "@colony/eslint-config-colony": "^3.0.1",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.2",
@@ -50,9 +51,9 @@
     "eslint": "^4.11.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-flowtype": "^2.41.0",
+    "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-prettier": "^2.4.0",
+    "eslint-plugin-prettier": "^2.5.0",
     "flow-bin": "0.64.0",
     "ganache-cli": "^6.0.3",
     "husky": "^0.14.3",

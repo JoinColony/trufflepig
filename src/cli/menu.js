@@ -10,9 +10,16 @@ const g = chalk.bold.green;
 const p = chalk.hex('#f28fb1');
 
 const printMainMenu = (status: Status, config: Config) => {
-  const ganacheStatus = status.ganacheReady ? `started on port ${b(config.ganacheOpts.port)}` : 'not started';
-  const pigStatus = status.apiUrl ? `serving contracts at ${b(status.apiUrl)}` : 'initializing...';
-  const statusMsg = status.message instanceof Error ? r(`ERROR: ${status.message.message}`) : g(status.message);
+  const ganacheStatus = status.ganacheReady
+    ? `started on port ${b(config.ganacheOpts.port)}`
+    : 'not started';
+  const pigStatus = status.apiUrl
+    ? `serving contracts at ${b(status.apiUrl)}`
+    : 'initializing...';
+  const statusMsg =
+    status.message instanceof Error
+      ? r(`ERROR: ${status.message.message}`)
+      : g(status.message);
 
   console.log('\x1Bc'); // clear screen
   console.log(`

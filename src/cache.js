@@ -17,25 +17,32 @@ export default class TrufflePigCache extends EventEmitter {
   _contracts: Contracts;
   _watcher: any;
 
-  static contractMatchesQuery(contract: TrufflePigContract, query: Query): boolean {
+  static contractMatchesQuery(
+    contract: TrufflePigContract,
+    query: Query,
+  ): boolean {
     // TODO: something with version?
-    if (query.name === contract.name && (query.isDeployed === 'true') === contract.isDeployed) {
+    if (
+      query.name === contract.name &&
+      (query.isDeployed === 'true') === contract.isDeployed
+    ) {
       return true;
     }
     return false;
   }
-  async readContractFile(path: string): Promise<TrufflePigContract | void> {
+  async readContractFile(path: string): Promise<TrufflePigContract | null> {
     let contents: string;
     try {
       contents = await promisify(readFile)(path);
     } catch (e) {
       this.emit('error', `Could not read file: ${path}`);
-      return;
+      return null;
     }
     try {
       return new TrufflePigContract(path, JSON.parse(contents));
     } catch (e) {
       this.emit('error', `Could not parse file: ${path}`);
+      return null;
     }
   }
   constructor({ paths }: { paths: Array<string> }) {
@@ -78,13 +85,19 @@ export default class TrufflePigCache extends EventEmitter {
   }
   contractNames() {
     return {
-      contractNames: [...this._contracts.values()].map(contract => contract.name),
+      contractNames: [...this._contracts.values()].map(
+        contract => contract.name,
+      ),
     };
   }
   findContracts(query: Query) {
-    return [...this._contracts.values()].filter(contract => TrufflePigCache.contractMatchesQuery(contract, query)).map(contract => contract.artifact);
+    return [...this._contracts.values()]
+      .filter(contract => TrufflePigCache.contractMatchesQuery(contract, query))
+      .map(contract => contract.artifact);
   }
   findContract(query: Query) {
-    return [...this._contracts.values()].find(contract => TrufflePigCache.contractMatchesQuery(contract, query));
+    return [...this._contracts.values()].find(contract =>
+      TrufflePigCache.contractMatchesQuery(contract, query),
+    );
   }
 }

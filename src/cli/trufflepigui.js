@@ -53,8 +53,12 @@ class TrufflePigUI {
   setupServices() {
     this._ganache = new Ganache(this._config.ganacheOpts);
     this._pig = new TrufflePig(this._config.trufflePigOpts);
-    this._ganache.on('error', err => this.update('message', new Error(`Ganache server error: ${err}`)));
-    this._pig.on('error', err => this.update('message', new Error(`Pig server error: ${err}`)));
+    this._ganache.on('error', err =>
+      this.update('message', new Error(`Ganache server error: ${err}`)),
+    );
+    this._pig.on('error', err =>
+      this.update('message', new Error(`Pig server error: ${err}`)),
+    );
     this._pig.on('log', log => this.update('message', log));
     this._pig.on('ready', apiUrl => this.update('apiUrl', apiUrl));
   }
@@ -70,7 +74,10 @@ class TrufflePigUI {
     this.listenToKeyboardEvents();
   }
   async close() {
-    this.update('message', "Shutting down gracefully... (Press CTRL+C if you're impatient)");
+    this.update(
+      'message',
+      "Shutting down gracefully... (Press CTRL+C if you're impatient)",
+    );
     if (this._ganache && this._ganache.listening) {
       this._ganache.close();
     }
@@ -86,7 +93,10 @@ class TrufflePigUI {
     });
     proc.on('error', err => {
       this.constructor.hookKeyboard();
-      this.update('message', new Error(`Could not spawn ${cmd}: ${err.message}`));
+      this.update(
+        'message',
+        new Error(`Could not spawn ${cmd}: ${err.message}`),
+      );
     });
     proc.on('exit', code => {
       this.constructor.hookKeyboard();
