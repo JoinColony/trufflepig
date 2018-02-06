@@ -41,8 +41,6 @@ const pig = new TrufflePig({
   verbose: !!args.verbose,
 });
 
-const cli = new TrufflePigUI(pig, {
-  contractDir: String(args.contractDir),
-});
+const cli = new TrufflePigUI(pig);
 
 cli.start();

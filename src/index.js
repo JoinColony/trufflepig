@@ -6,7 +6,7 @@ import type { $Application, $Request, $Response } from 'express';
 import TrufflePigCache from './cache';
 
 type CacheOptions = {
-  paths: Array<string>,
+  contractDir: string,
   verbose: boolean,
 };
 
@@ -53,8 +53,7 @@ export default class TrufflePig extends EventEmitter {
     this._ganacheState = {};
   }
   apiUrl(): string {
-    const { port } = this._listener.address();
-    return `http://127.0.0.1:${port}/${this._options.endpoint}`;
+    return `http://127.0.0.1:${this._options.port}/${this._options.endpoint}`;
   }
   createCache() {
     const { contractDir, verbose } = this._options;
@@ -105,5 +104,8 @@ export default class TrufflePig extends EventEmitter {
   }
   setGanacheState(state: GanacheState): void {
     this._ganacheState = state;
+  }
+  getConfig(): Options & { apiUrl: string } {
+    return Object.assign({}, this._options, { apiUrl: this.apiUrl() });
   }
 }

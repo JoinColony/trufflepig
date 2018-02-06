@@ -16,16 +16,19 @@ class TrufflePigUI {
     process.stdin.resume();
   }
   constructor(pig, config) {
-    this._config = Object.assign({}, config, {
-      ganachePort: 8545,
-      contractDir: './build/contracts',
-      pigAddress: 'http://localhost:3030/contracts',
-    });
     this._status = {
       message: '',
       ganacheListening: false,
     };
     this._pig = pig;
+    this._config = Object.assign(
+      {},
+      pig.getConfig(),
+      {
+        ganacheOpts: { port: 8545 },
+      },
+      config
+    );
     this._ganache = new Ganache({
       port: this._config.ganachePort,
     });
