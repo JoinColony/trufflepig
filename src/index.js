@@ -1,6 +1,7 @@
 /* @flow */
 
 import express from 'express';
+import cors from 'cors';
 import EventEmitter from 'events';
 import type { $Application, $Request, $Response } from 'express';
 import type { GanacheState, Server, TPOptions } from './flowtypes';
@@ -8,6 +9,18 @@ import TrufflePigCache from './cache';
 
 const DEFAULT_ENDPOINT = 'contracts';
 const DEFAULT_PORT = 3030;
+const CORS_WHITELIST = ['0.0.0.0', '127.0.0.1', '[::1]', 'localhost'];
+const CORS_OPTIONS = {
+  origin(origin = '', callback) {
+    // eslint-disable-next-line no-unused-vars
+    const [_, domain] = origin.match(/.+:\/\/?([^/:]+)/) || [];
+    if (origin.length === 0 || CORS_WHITELIST.includes(domain)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
 
 export default class TrufflePig extends EventEmitter {
   _options: TPOptions;
@@ -56,6 +69,7 @@ export default class TrufflePig extends EventEmitter {
   createServer() {
     const { endpoint, port, verbose } = this._options;
     this._server = express();
+    this._server.all('*', cors(CORS_OPTIONS));
     this._server.get(`/${endpoint}`, ({ query }: $Request, res: $Response) => {
       if (Object.keys(query).length > 0) {
         const contract = this._cache.findContract(query);

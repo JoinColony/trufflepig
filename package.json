@@ -36,6 +36,7 @@
   "dependencies": {
     "chalk": "^2.3.0",
     "chokidar": "^2.0.0",
+    "cors": "^2.8.4",
     "express": "^4.16.2",
     "flow-copy-source": "^1.2.1",
     "yargs": "^11.0.0"
