@@ -4,9 +4,14 @@ import { readFile } from 'fs';
 import { promisify } from 'util';
 import chokidar from 'chokidar';
 import EventEmitter from 'events';
-import TrufflePigContract from './contract';
 
-type Contracts = Map<string, TrufflePigContract>;
+type TruffleArtifact = {
+  abi: Object,
+  contractName: string,
+  networks?: Object,
+};
+
+type Contracts = Map<string, TruffleArtifact>;
 
 type Query = {
   isDeployed?: string | Array<string>,
@@ -18,19 +23,13 @@ export default class TrufflePigCache extends EventEmitter {
   _watcher: any;
 
   static contractMatchesQuery(
-    contract: TrufflePigContract,
+    contract: TruffleArtifact,
     query: Query,
   ): boolean {
-    // TODO: something with version?
-    if (
-      query.name === contract.name &&
-      (query.isDeployed === 'true') === contract.isDeployed
-    ) {
-      return true;
-    }
-    return false;
+    // TODO later: if the need arises, support limiting by fields other than name
+    return query.name === contract.contractName;
   }
-  async readContractFile(path: string): Promise<TrufflePigContract | null> {
+  async readContractFile(path: string): Promise<TruffleArtifact | null> {
     let contents: string;
     try {
       contents = await promisify(readFile)(path);
@@ -39,7 +38,7 @@ export default class TrufflePigCache extends EventEmitter {
       return null;
     }
     try {
-      return new TrufflePigContract(path, JSON.parse(contents));
+      return JSON.parse(contents);
     } catch (e) {
       this.emit('error', `Could not parse file: ${path}`);
       return null;
@@ -86,14 +85,14 @@ export default class TrufflePigCache extends EventEmitter {
   contractNames() {
     return {
       contractNames: [...this._contracts.values()].map(
-        contract => contract.name,
+        contract => contract.contractName,
       ),
     };
   }
   findContracts(query: Query) {
-    return [...this._contracts.values()]
-      .filter(contract => TrufflePigCache.contractMatchesQuery(contract, query))
-      .map(contract => contract.artifact);
+    return [...this._contracts.values()].filter(contract =>
+      TrufflePigCache.contractMatchesQuery(contract, query),
+    );
   }
   findContract(query: Query) {
     return [...this._contracts.values()].find(contract =>
