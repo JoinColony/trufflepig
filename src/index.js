@@ -7,9 +7,13 @@ import type { $Application, $Request, $Response } from 'express';
 import type { GanacheState, Server, TPOptions } from './flowtypes';
 import TrufflePigCache from './cache';
 
-const DEFAULT_ENDPOINT = 'contracts';
-const DEFAULT_PORT = 3030;
-const CORS_WHITELIST = ['0.0.0.0', '127.0.0.1', '[::1]', 'localhost'];
+import {
+  CONTRACTS_ENDPOINT,
+  CONFIG_ENDPOINT,
+  CORS_WHITELIST,
+  DEFAULT_PIG_PORT,
+} from './constants';
+
 const CORS_OPTIONS = {
   origin(origin = '', callback) {
     // eslint-disable-next-line no-unused-vars
@@ -30,21 +34,19 @@ export default class TrufflePig extends EventEmitter {
   _ganacheState: GanacheState;
   constructor({
     contractDir,
-    port = DEFAULT_PORT,
-    endpoint = DEFAULT_ENDPOINT,
+    port = DEFAULT_PIG_PORT,
     verbose = false,
   }: TPOptions) {
     super();
     this._options = {
       contractDir,
       port,
-      endpoint,
       verbose,
     };
     this._ganacheState = {};
   }
   apiUrl(): string {
-    return `http://127.0.0.1:${this._options.port}/${this._options.endpoint}`;
+    return `http://127.0.0.1:${this._options.port}${CONTRACTS_ENDPOINT}`;
   }
   createCache() {
     const { contractDir, verbose } = this._options;
@@ -67,24 +69,29 @@ export default class TrufflePig extends EventEmitter {
     });
   }
   createServer() {
-    const { endpoint, port, verbose } = this._options;
+    const { port, verbose } = this._options;
     this._server = express();
     this._server.all('*', cors(CORS_OPTIONS));
-    this._server.get(`/${endpoint}`, ({ query }: $Request, res: $Response) => {
-      if (Object.keys(query).length > 0) {
-        const contract = this._cache.findContract(query);
-        if (verbose && !contract)
-          this.emit(
-            'error',
-            new Error(
-              `Unable to find contract matching query ${JSON.stringify(query)}`,
-            ),
-          );
-        return res.json(contract || {});
-      }
-      return res.json(this._cache.contractNames());
-    });
-    this._server.get('/_config', (req: $Request, res: $Response) => {
+    this._server.get(
+      CONTRACTS_ENDPOINT,
+      ({ query }: $Request, res: $Response) => {
+        if (Object.keys(query).length > 0) {
+          const contract = this._cache.findContract(query);
+          if (verbose && !contract)
+            this.emit(
+              'error',
+              new Error(
+                `Unable to find contract matching query ${JSON.stringify(
+                  query,
+                )}`,
+              ),
+            );
+          return res.json(contract || {});
+        }
+        return res.json(this._cache.contractNames());
+      },
+    );
+    this._server.get(CONFIG_ENDPOINT, (req: $Request, res: $Response) => {
       res.json(this._ganacheState);
     });
 

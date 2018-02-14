@@ -14,7 +14,10 @@ export type GanacheState = {
 };
 
 // That'll do for now
-export type GanacheOptions = Object;
+export type GanacheOptions = {
+  port?: number,
+  startGanache?: boolean,
+};
 
 type TPCacheOptions = {
   contractDir: string,
@@ -22,7 +25,6 @@ type TPCacheOptions = {
 };
 
 type TPServerOptions = {
-  endpoint: string,
   port: number,
   verbose: boolean,
 };
