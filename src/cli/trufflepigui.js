@@ -153,6 +153,10 @@ class TrufflePigUI {
     if (status) {
       this._status[status] = val;
     }
+    if (!process.stdin.isRaw) {
+      // Do not update the UI if keyboard is unhooked
+      return;
+    }
     printMainMenu(this._status, this._config);
   }
   async listenToKeyboardEvents() {
