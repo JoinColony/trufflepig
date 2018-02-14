@@ -46,7 +46,7 @@ export default class TrufflePig extends EventEmitter {
     this._ganacheState = {};
   }
   apiUrl(): string {
-    return `http://127.0.0.1:${this._options.port}/${CONTRACTS_ENDPOINT}`;
+    return `http://127.0.0.1:${this._options.port}${CONTRACTS_ENDPOINT}`;
   }
   createCache() {
     const { contractDir, verbose } = this._options;
