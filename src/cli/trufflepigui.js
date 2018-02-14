@@ -114,7 +114,7 @@ class TrufflePigUI {
     this.update();
     if (this.didStartWithGanache) await this.startGanache();
     this._pig.start();
-    await this.listenToKeyboardEvents();
+    this.listenToKeyboardEvents();
   }
   async close() {
     this.update(
@@ -163,7 +163,7 @@ class TrufflePigUI {
         return;
       }
       if ((key.ctrl && key.name === 'c') || key.name === 'q') {
-        await this.close();
+        this.close();
       }
       if (key.name === 'g') {
         if (!this._ganache) this.setupGanache();
@@ -176,10 +176,10 @@ class TrufflePigUI {
         }
       }
       if (key.name === 'd') {
-        await this.deployContracts();
+        this.deployContracts();
       }
       if (key.name === 't') {
-        await this.spawnTruffleConsole();
+        this.spawnTruffleConsole();
       }
       if (key.name === 'return') {
         this.update();
