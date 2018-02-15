@@ -17,7 +17,7 @@
     "flow": "flow check",
     "lint": "run(){ eslint --ignore-pattern=**/{node_modules,lib}/* --fix ${@:-\"./src/{,**/}*.js\"}; }; run",
     "precommit": "lint-staged",
-    "test": "yarn run lint"
+    "test": "yarn run lint && yarn run flow"
   },
   "keywords": [
     "truffle",
