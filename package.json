@@ -55,7 +55,7 @@
     "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-prettier": "^2.5.0",
-    "flow-bin": "0.65.0",
+    "flow-bin": "0.66.0",
     "ganache-cli": "^6.0.3",
     "husky": "^0.14.3",
     "lint-staged": "^6.0.0",
