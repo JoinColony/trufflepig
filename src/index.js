@@ -28,7 +28,7 @@ const CORS_OPTIONS = {
 
 export default class TrufflePig extends EventEmitter {
   _options: TPOptions;
-  _listener: Server;
+  _listener: ?Server;
   _server: $Application;
   _cache: TrufflePigCache;
   constructor({
@@ -103,7 +103,9 @@ export default class TrufflePig extends EventEmitter {
     this.createServer();
   }
   close(): void {
-    this._listener.close();
+    if (this._listener) {
+      this._listener.close();
+    }
     this._cache.close();
   }
   getConfig(): TPOptions & { apiUrl: string } {
