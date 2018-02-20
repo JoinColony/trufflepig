@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import EventEmitter from 'events';
 import type { $Application, $Request, $Response } from 'express';
-import type { GanacheState, Server, TPOptions } from './flowtypes';
+import type { Server, TPOptions } from './flowtypes';
 import TrufflePigCache from './cache';
 
 import {
@@ -31,7 +31,6 @@ export default class TrufflePig extends EventEmitter {
   _listener: Server;
   _server: $Application;
   _cache: TrufflePigCache;
-  _ganacheState: GanacheState;
   constructor({
     contractDir,
     port = DEFAULT_PIG_PORT,
@@ -43,7 +42,6 @@ export default class TrufflePig extends EventEmitter {
       port,
       verbose,
     };
-    this._ganacheState = {};
   }
   apiUrl(): string {
     return `http://127.0.0.1:${this._options.port}${CONTRACTS_ENDPOINT}`;
@@ -92,7 +90,8 @@ export default class TrufflePig extends EventEmitter {
       },
     );
     this._server.get(CONFIG_ENDPOINT, (req: $Request, res: $Response) => {
-      res.json(this._ganacheState);
+      // TODO: For now just return an empty object
+      res.json({});
     });
 
     this._listener = this._server.listen(port, () => {
@@ -106,9 +105,6 @@ export default class TrufflePig extends EventEmitter {
   close(): void {
     this._listener.close();
     this._cache.close();
-  }
-  setGanacheState(state: GanacheState): void {
-    this._ganacheState = state;
   }
   getConfig(): TPOptions & { apiUrl: string } {
     return Object.assign({}, this._options, { apiUrl: this.apiUrl() });

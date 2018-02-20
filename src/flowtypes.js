@@ -1,3 +1,5 @@
+/* @flow */
+
 // Because of https://github.com/facebook/flow/issues/5113
 export type Server = {
   address: () => {
@@ -7,16 +9,6 @@ export type Server = {
   },
   listen: () => Server,
   close: () => void,
-};
-
-export type GanacheState = {
-  accounts?: Array<{ address: string, key: string }>,
-};
-
-// That'll do for now
-export type GanacheOptions = {
-  port?: number,
-  startGanache?: boolean,
 };
 
 type TPCacheOptions = {

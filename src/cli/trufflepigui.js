@@ -3,29 +3,25 @@
 import readline from 'readline';
 import { spawn } from 'child_process';
 
-import type { GanacheOptions, TPOptions } from '../flowtypes';
+import type { TPOptions } from '../flowtypes';
 
-import Ganache from './ganache';
 import printMainMenu from './menu';
 import TrufflePig from '../';
 
 export type Status = {
   message: string,
   apiUrl: string,
-  ganacheListening: boolean,
   winkingL: boolean,
   winkingR: boolean,
 };
 
 export type Config = {
-  ganacheOpts: GanacheOptions,
   trufflePigOpts: TPOptions,
 };
 
 class TrufflePigUI {
   _status: Status;
   _config: Config;
-  _ganache: Ganache;
   _pig: TrufflePig;
   static setRawMode(enabled: boolean) {
     if (process.stdin.isTTY) {
@@ -40,26 +36,18 @@ class TrufflePigUI {
     TrufflePigUI.setRawMode(true);
     process.stdin.resume();
   }
-  constructor(pigConfig: TPOptions, ganacheConfig: GanacheOptions = {}) {
+  constructor(pigConfig: TPOptions) {
     this._status = {
       message: '',
       apiUrl: '',
-      ganacheListening: false,
       winkingL: false,
       winkingR: false,
     };
     this._config = {
-      ganacheOpts: Object.assign({ port: 8545 }, ganacheConfig),
       trufflePigOpts: pigConfig,
     };
     this.setupServices();
     this.setupWinks();
-  }
-  get didStartWithGanache(): boolean {
-    return this._config.ganacheOpts.startGanache;
-  }
-  get ganacheDidStart(): boolean {
-    return this._ganache && this._ganache.listening;
   }
   setupWinks(): void {
     let changed = false;
@@ -79,12 +67,6 @@ class TrufflePigUI {
       }
     }, 1000);
   }
-  setupGanache(): void {
-    this._ganache = new Ganache(this._config.ganacheOpts);
-    this._ganache.on('error', err =>
-      this.update('message', new Error(`Ganache server error: ${err}`)),
-    );
-  }
   setupPig(): void {
     this._pig = new TrufflePig(this._config.trufflePigOpts);
     this._pig.on('error', err =>
@@ -94,25 +76,10 @@ class TrufflePigUI {
     this._pig.on('ready', apiUrl => this.update('apiUrl', apiUrl));
   }
   setupServices() {
-    if (this.didStartWithGanache) this.setupGanache();
     this.setupPig();
-  }
-  async startGanache() {
-    if (!this._ganache) await this.setupGanache();
-    const ganacheState = await this._ganache.start();
-    if (!ganacheState) return;
-    this.update('ganacheReady', true);
-    this._pig.setGanacheState(ganacheState);
-    this.update('message', 'Ganache server restarted successfully');
-  }
-  async stopGanache() {
-    await this._ganache.close();
-    this.update('ganacheReady', false);
-    this.update('message', 'Ganache server stopped successfully');
   }
   async start() {
     this.update();
-    if (this.didStartWithGanache) await this.startGanache();
     this._pig.start();
     this.listenToKeyboardEvents();
   }
@@ -121,7 +88,6 @@ class TrufflePigUI {
       'message',
       "Shutting down gracefully... (Press CTRL+C if you're impatient)",
     );
-    if (this.ganacheDidStart) await this.stopGanache();
     this._pig.close();
     this.constructor.unhookKeyboard();
     process.exit(0);
@@ -168,16 +134,6 @@ class TrufflePigUI {
       }
       if ((key.ctrl && key.name === 'c') || key.name === 'q') {
         this.close();
-      }
-      if (key.name === 'g') {
-        if (!this._ganache) this.setupGanache();
-        if (this.ganacheDidStart) {
-          console.log('stopping');
-          await this.stopGanache();
-        } else {
-          console.log('starting');
-          await this.startGanache();
-        }
       }
       if (key.name === 'd') {
         this.deployContracts();
