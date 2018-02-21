@@ -14,6 +14,8 @@ export type Server = {
 type TPCacheOptions = {
   contractDir: string,
   verbose: boolean,
+  ganacheKeyFile: string,
+  keystoreDir: string,
 };
 
 type TPServerOptions = {

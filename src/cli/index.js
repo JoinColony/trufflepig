@@ -25,6 +25,18 @@ const args = yargs
       type: 'string',
       default: './build/contracts',
     },
+    g: {
+      alias: 'ganacheKeyFile',
+      describe:
+        'Ganache accounts file (.json), will serve accounts under /accounts',
+      type: 'string',
+    },
+    k: {
+      alias: 'keystoreDir',
+      describe:
+        'Directory for keystore files, will serve accounts under /accounts',
+      type: 'string',
+    },
   })
   .parse();
 
@@ -32,6 +44,8 @@ const pig = new TrufflePigUI({
   contractDir: String(args.contractDir),
   port: parseInt(args.port, 10),
   verbose: !!args.verbose,
+  ganacheKeyFile: String(args.ganacheKeyFile),
+  keystoreDir: String(args.keystoreDir),
 });
 
 (async () => {
