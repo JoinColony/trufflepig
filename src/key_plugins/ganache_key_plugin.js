@@ -1,11 +1,13 @@
 /* @flow */
 
+import type { Accounts } from '../flowtypes';
+
 const Cache = require('../cache');
 
 const setup = (
   files: Array<string> | string,
   opts: Object,
-  cb: ({ [string]: string }) => any,
+  cb: Accounts => any,
 ) => {
   const cache = new Cache(files);
   // eslint-disable-next-line camelcase

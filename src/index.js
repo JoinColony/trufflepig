@@ -1,7 +1,7 @@
 /* @flow */
 
 import type { $Application, $Request, $Response } from 'express';
-import type { Server, TPOptions } from './flowtypes';
+import type { Accounts, Server, TPOptions } from './flowtypes';
 
 const express = require('express');
 const cors = require('cors');
@@ -30,7 +30,7 @@ const CORS_OPTIONS = {
 };
 
 class TrufflePig extends EventEmitter {
-  _accounts: { [string]: string };
+  _accounts: Accounts;
   _cache: ContractCache;
   _listener: ?Server;
   _options: TPOptions;
@@ -141,7 +141,7 @@ class TrufflePig extends EventEmitter {
   getConfig(): TPOptions & { apiUrl: string } {
     return Object.assign({}, this._options, { apiUrl: this.apiUrl() });
   }
-  setAccounts(accounts: { [string]: string }): void {
+  setAccounts(accounts: Accounts): void {
     this._accounts = Object.assign({}, accounts);
   }
 }

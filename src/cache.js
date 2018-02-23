@@ -1,16 +1,16 @@
 /* @flow */
 
+import type {
+  Cache,
+  CacheObject,
+  CacheOpts,
+  TransformFunction,
+} from './flowtypes';
+
 const { readFile } = require('fs');
 const { promisify } = require('util');
 const EventEmitter = require('events');
 const chokidar = require('chokidar');
-
-type CacheObject = Object | null;
-type TransformFunction = CacheObject => CacheObject;
-type Cache = Map<string, Object>;
-type CacheOpts = {
-  transform: TransformFunction,
-};
 
 const identity: TransformFunction = i => i;
 
@@ -46,36 +46,29 @@ class TrufflePigCache extends EventEmitter {
       return null;
     }
   }
-  async add(path: string): Promise<void> {
-    if (this._cache.has(path)) return;
-    let transformed;
+  async _handleFileChange(evt: string, path: string): Promise<void> {
+    let result;
     try {
       const cacheObject = await this._readFile(path);
-      transformed = await this._transform(cacheObject);
+      result = await this._transform(cacheObject);
     } catch (e) {
       this.emit('error', `CacheError: ${e.message}`);
     }
-    if (transformed) {
-      this._cache.set(path, transformed);
-      this.emit('add', path, transformed);
+    if (result) {
+      this._cache.set(path, result);
+      this.emit(evt, path, result);
     }
+  }
+  async add(path: string): Promise<void> {
+    if (this._cache.has(path)) return;
+    this._handleFileChange(path, 'add');
   }
   async change(path: string): Promise<void> {
     if (!this._cache.has(path)) {
       this.emit('error', `Can not change non existing path ${path}`);
       return;
     }
-    let transformed;
-    try {
-      const cacheObject = await this._readFile(path);
-      transformed = await this._transform(cacheObject);
-    } catch (e) {
-      this.emit('error', `CacheError: ${e.message}`);
-    }
-    if (transformed) {
-      this._cache.set(path, transformed);
-      this.emit('change', path, transformed);
-    }
+    this._handleFileChange('change', path);
   }
   get(path: string): CacheObject {
     return this._cache.get(path) || null;
