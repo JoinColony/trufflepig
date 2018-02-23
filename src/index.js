@@ -1,18 +1,21 @@
 /* @flow */
 
-import express from 'express';
-import cors from 'cors';
-import EventEmitter from 'events';
 import type { $Application, $Request, $Response } from 'express';
-import type { Server, TPOptions } from './flowtypes';
-import TrufflePigCache from './cache';
+import type { Accounts, Server, TPOptions } from './flowtypes';
 
-import {
+const express = require('express');
+const cors = require('cors');
+const EventEmitter = require('events');
+
+const ContractCache = require('./contract_cache');
+
+const {
   CONTRACTS_ENDPOINT,
-  CONFIG_ENDPOINT,
+  ACCOUNTS_ENDPOINT,
   CORS_WHITELIST,
   DEFAULT_PIG_PORT,
-} from './constants';
+  KEY_PLUGINS,
+} = require('./constants');
 
 const CORS_OPTIONS = {
   origin(origin = '', callback) {
@@ -26,29 +29,37 @@ const CORS_OPTIONS = {
   },
 };
 
-export default class TrufflePig extends EventEmitter {
-  _options: TPOptions;
+class TrufflePig extends EventEmitter {
+  _accounts: Accounts;
+  _cache: ContractCache;
   _listener: ?Server;
+  _options: TPOptions;
   _server: $Application;
-  _cache: TrufflePigCache;
   constructor({
     contractDir,
     port = DEFAULT_PIG_PORT,
     verbose = false,
+    ganacheKeyFile = '',
+    keystoreDir = '',
+    keystorePassword = '',
   }: TPOptions) {
     super();
     this._options = {
       contractDir,
       port,
       verbose,
+      ganacheKeyFile,
+      keystoreDir,
+      keystorePassword,
     };
+    this._accounts = {};
   }
   apiUrl(): string {
     return `http://127.0.0.1:${this._options.port}${CONTRACTS_ENDPOINT}`;
   }
   createCache() {
     const { contractDir, verbose } = this._options;
-    this._cache = new TrufflePigCache({ paths: [contractDir], verbose });
+    this._cache = new ContractCache(contractDir);
 
     this._cache.on('add', path => {
       if (verbose) this.emit('log', `Cache added: ${path}`);
@@ -63,8 +74,27 @@ export default class TrufflePig extends EventEmitter {
     });
 
     this._cache.on('error', error => {
-      if (verbose) this.emit('error', error);
+      this.emit('error', error);
     });
+  }
+  createAccountCache() {
+    const { ganacheKeyFile, keystoreDir, keystorePassword } = this._options;
+    if (ganacheKeyFile) {
+      const ganacheCache = KEY_PLUGINS.ganache(
+        ganacheKeyFile,
+        {},
+        this.setAccounts.bind(this),
+      );
+      ganacheCache.on('error', this.emit.bind(this, 'error'));
+    }
+    if (keystoreDir) {
+      const keystoreCache = KEY_PLUGINS.keystore(
+        keystoreDir,
+        { password: keystorePassword },
+        this.setAccounts.bind(this),
+      );
+      keystoreCache.on('error', this.emit.bind(this, 'error'));
+    }
   }
   createServer() {
     const { port, verbose } = this._options;
@@ -89,9 +119,8 @@ export default class TrufflePig extends EventEmitter {
         return res.json(this._cache.contractNames());
       },
     );
-    this._server.get(CONFIG_ENDPOINT, (req: $Request, res: $Response) => {
-      // TODO: For now just return an empty object
-      res.json({});
+    this._server.get(ACCOUNTS_ENDPOINT, (req: $Request, res: $Response) => {
+      res.json(this._accounts);
     });
 
     this._listener = this._server.listen(port, () => {
@@ -100,6 +129,7 @@ export default class TrufflePig extends EventEmitter {
   }
   start(): void {
     this.createCache();
+    this.createAccountCache();
     this.createServer();
   }
   close(): void {
@@ -111,4 +141,9 @@ export default class TrufflePig extends EventEmitter {
   getConfig(): TPOptions & { apiUrl: string } {
     return Object.assign({}, this._options, { apiUrl: this.apiUrl() });
   }
+  setAccounts(accounts: Accounts): void {
+    this._accounts = Object.assign({}, accounts);
+  }
 }
+
+module.exports = TrufflePig;

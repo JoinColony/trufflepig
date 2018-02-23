@@ -1,35 +1,37 @@
 /* @flow */
 
-import { readFile } from 'fs';
-import { promisify } from 'util';
-import chokidar from 'chokidar';
-import EventEmitter from 'events';
+import type {
+  Cache,
+  CacheObject,
+  CacheOpts,
+  TransformFunction,
+} from './flowtypes';
 
-type TruffleArtifact = {
-  abi: Object,
-  contractName: string,
-  networks?: Object,
-};
+const { readFile } = require('fs');
+const { promisify } = require('util');
+const EventEmitter = require('events');
+const chokidar = require('chokidar');
 
-type Contracts = Map<string, TruffleArtifact>;
+const identity: TransformFunction = i => i;
 
-type Query = {
-  isDeployed?: string | Array<string>,
-  name?: string | Array<string>,
-};
-
-export default class TrufflePigCache extends EventEmitter {
-  _contracts: Contracts;
+class TrufflePigCache extends EventEmitter {
+  _cache: Cache;
   _watcher: any;
-
-  static contractMatchesQuery(
-    contract: TruffleArtifact,
-    query: Query,
-  ): boolean {
-    // TODO later: if the need arises, support limiting by fields other than name
-    return query.name === contract.contractName;
+  _transform: TransformFunction;
+  constructor(paths: Array<string> | string, { transform }: CacheOpts = {}) {
+    super();
+    this._cache = new Map();
+    this._watcher = chokidar.watch(paths, {
+      persistent: true,
+    });
+    this._watcher
+      .on('add', async path => this.add(path))
+      .on('change', async path => this.change(path))
+      .on('error', error => this.emit('error', error))
+      .on('unlink', path => this.remove(path));
+    this._transform = transform || identity;
   }
-  async readContractFile(path: string): Promise<TruffleArtifact | null> {
+  async _readFile(path: string): Promise<CacheObject> {
     let contents: string;
     try {
       contents = await promisify(readFile)(path);
@@ -44,59 +46,43 @@ export default class TrufflePigCache extends EventEmitter {
       return null;
     }
   }
-  constructor({ paths }: { paths: Array<string> }) {
-    super();
-    this._contracts = new Map();
-    this._watcher = chokidar.watch(paths, {
-      persistent: true,
-    });
-    this._watcher
-      .on('add', async path => this.add(path))
-      .on('change', async path => this.change(path))
-      .on('error', error => this.emit('error', error))
-      .on('unlink', path => this.remove(path));
-  }
-  async add(path: string): Promise<void> {
-    if (this._contracts.has(path)) return;
-    const contract = await this.readContractFile(path);
-    if (contract) {
-      this._contracts.set(path, contract);
-      this.emit('add', path);
+  async _handleFileChange(evt: string, path: string): Promise<void> {
+    let result;
+    try {
+      const cacheObject = await this._readFile(path);
+      result = await this._transform(cacheObject);
+    } catch (e) {
+      this.emit('error', `CacheError: ${e.message}`);
+    }
+    if (result) {
+      this._cache.set(path, result);
+      this.emit(evt, path, result);
     }
   }
+  async add(path: string): Promise<void> {
+    if (this._cache.has(path)) return;
+    this._handleFileChange(path, 'add');
+  }
   async change(path: string): Promise<void> {
-    if (!this._contracts.has(path)) {
+    if (!this._cache.has(path)) {
       this.emit('error', `Can not change non existing path ${path}`);
       return;
     }
-    const contract = await this.readContractFile(path);
-    if (contract) {
-      this._contracts.set(path, contract);
-      this.emit('change', path);
-    }
+    this._handleFileChange('change', path);
+  }
+  get(path: string): CacheObject {
+    return this._cache.get(path) || null;
+  }
+  values(): Array<CacheObject> {
+    return Array.from(this._cache.values());
   }
   close(): void {
     this._watcher.close();
   }
   remove(path: string): void {
-    this._contracts.delete(path);
+    this._cache.delete(path);
     this.emit('remove', path);
   }
-  contractNames() {
-    return {
-      contractNames: [...this._contracts.values()].map(
-        contract => contract.contractName,
-      ),
-    };
-  }
-  findContracts(query: Query) {
-    return [...this._contracts.values()].filter(contract =>
-      TrufflePigCache.contractMatchesQuery(contract, query),
-    );
-  }
-  findContract(query: Query) {
-    return [...this._contracts.values()].find(contract =>
-      TrufflePigCache.contractMatchesQuery(contract, query),
-    );
-  }
 }
+
+module.exports = TrufflePigCache;
