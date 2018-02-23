@@ -5,7 +5,7 @@ TrufflePig 🍄🐷
 
 TrufflePig is a development tool that provides a simple HTTP API to find and read from [Truffle](http://truffleframework.com/)-generated contract files, for use during local development.
 
-![The pig in action!](https://raw.githubusercontent.com/JoinColony/trufflepig/master/docs/ui.png)
+![The pig in action!](https://github.com/JoinColony/trufflepig/raw/master/docs/ui.png)
 
 Installation
 ------------
