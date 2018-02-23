@@ -39,6 +39,7 @@ const args = yargs
     s: {
       alias: 'keystorePassword',
       describe: 'Password to decrypt keystore files',
+      type: 'string',
     },
   })
   .parse();
