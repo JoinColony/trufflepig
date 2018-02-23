@@ -1,9 +1,9 @@
 /* @flow */
 
-import { readFile } from 'fs';
-import { promisify } from 'util';
-import chokidar from 'chokidar';
-import EventEmitter from 'events';
+const { readFile } = require('fs');
+const { promisify } = require('util');
+const EventEmitter = require('events');
+const chokidar = require('chokidar');
 
 type CacheObject = Object | null;
 type TransformFunction = CacheObject => CacheObject;
@@ -14,7 +14,7 @@ type CacheOpts = {
 
 const identity: TransformFunction = i => i;
 
-export default class TrufflePigCache extends EventEmitter {
+class TrufflePigCache extends EventEmitter {
   _cache: Cache;
   _watcher: any;
   _transform: TransformFunction;
@@ -91,3 +91,5 @@ export default class TrufflePigCache extends EventEmitter {
     this.emit('remove', path);
   }
 }
+
+module.exports = TrufflePigCache;

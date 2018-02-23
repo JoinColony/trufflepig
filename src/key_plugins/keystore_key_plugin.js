@@ -1,7 +1,7 @@
 /* @flow */
 
-import { Wallet } from 'ethers-wallet';
-import Cache from '../cache';
+const { Wallet } = require('ethers-wallet');
+const Cache = require('../cache');
 
 const getWalletData = async (walletData, password) => {
   const serializedWallet = JSON.stringify(walletData);
@@ -27,4 +27,4 @@ const setup = (
   return cache;
 };
 
-export default setup;
+module.exports = setup;

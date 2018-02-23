@@ -1,7 +1,5 @@
 /* @flow */
 
-import TrufflePigCache from './cache';
-
 type TruffleArtifact = {
   abi: Object,
   contractName: string,
@@ -13,7 +11,9 @@ type Query = {
   name?: string | Array<string>,
 };
 
-export default class ContractCache extends TrufflePigCache {
+const TrufflePigCache = require('./cache');
+
+class ContractCache extends TrufflePigCache {
   static contractMatchesQuery(
     contract: TruffleArtifact,
     query: Query,
@@ -39,3 +39,5 @@ export default class ContractCache extends TrufflePigCache {
     );
   }
 }
+
+module.exports = ContractCache;

@@ -1,12 +1,12 @@
 /* @flow */
 
-import readline from 'readline';
-import { spawn } from 'child_process';
-
 import type { TPOptions } from '../flowtypes';
 
-import printMainMenu from './menu';
-import TrufflePig from '../';
+const readline = require('readline');
+const { spawn } = require('child_process');
+
+const printMainMenu = require('./menu');
+const TrufflePig = require('../');
 
 export type Status = {
   message: string,
@@ -157,4 +157,4 @@ class TrufflePigUI {
     this.spawn('truffle', ['console'], 'inherit');
   }
 }
-export default TrufflePigUI;
+module.exports = TrufflePigUI;

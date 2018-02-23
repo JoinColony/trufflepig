@@ -1,8 +1,8 @@
 /* @flow */
 
-import chalk from 'chalk';
+import type { Status, Config } from './ui';
 
-import type { Status, Config } from './trufflepigui';
+const chalk = require('chalk');
 
 const b = chalk.bold.blue;
 const r = chalk.bold.red;
@@ -43,4 +43,4 @@ const printMainMenu = (status: Status, config: Config) => {
   /* eslint max-len: 1 */
 };
 
-export default printMainMenu;
+module.exports = printMainMenu;

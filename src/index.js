@@ -1,19 +1,21 @@
 /* @flow */
 
-import express from 'express';
-import cors from 'cors';
-import EventEmitter from 'events';
 import type { $Application, $Request, $Response } from 'express';
 import type { Server, TPOptions } from './flowtypes';
-import ContractCache from './contract_cache';
 
-import {
+const express = require('express');
+const cors = require('cors');
+const EventEmitter = require('events');
+
+const ContractCache = require('./contract_cache');
+
+const {
   CONTRACTS_ENDPOINT,
   ACCOUNTS_ENDPOINT,
   CORS_WHITELIST,
   DEFAULT_PIG_PORT,
   KEY_PLUGINS,
-} from './constants';
+} = require('./constants');
 
 const CORS_OPTIONS = {
   origin(origin = '', callback) {
@@ -27,7 +29,7 @@ const CORS_OPTIONS = {
   },
 };
 
-export default class TrufflePig extends EventEmitter {
+class TrufflePig extends EventEmitter {
   _accounts: { [string]: string };
   _cache: ContractCache;
   _listener: ?Server;
@@ -143,3 +145,5 @@ export default class TrufflePig extends EventEmitter {
     this._accounts = Object.assign({}, accounts);
   }
 }
+
+module.exports = TrufflePig;

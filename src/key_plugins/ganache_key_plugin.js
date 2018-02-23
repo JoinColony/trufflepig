@@ -1,6 +1,6 @@
 /* @flow */
 
-import Cache from '../cache';
+const Cache = require('../cache');
 
 const setup = (
   files: Array<string> | string,
@@ -25,4 +25,4 @@ const setup = (
   return cache;
 };
 
-export default setup;
+module.exports = setup;

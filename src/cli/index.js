@@ -1,11 +1,10 @@
 /* @flow */
 
-import yargs from 'yargs';
+const yargs = require('yargs');
 
-import TrufflePigUI from './trufflepigui';
+const TrufflePigUI = require('./ui');
 
 const args = yargs
-  .usage('$0 path/to/my/contracts [another/path, ...]')
   .options({
     p: {
       alias: 'port',
@@ -53,6 +52,4 @@ const pig = new TrufflePigUI({
   keystorePassword: String(args.keystorePassword),
 });
 
-(async () => {
-  await pig.start();
-})();
+pig.start();
