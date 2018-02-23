@@ -1,160 +1,138 @@
 /* @flow */
 
-import type { TPOptions } from '../flowtypes';
+const blessed = require('blessed');
+const contrib = require('blessed-contrib');
+const chalk = require('chalk');
 
-const readline = require('readline');
-const { spawn } = require('child_process');
-
-const printMainMenu = require('./menu');
-const TrufflePig = require('../');
-
-export type Status = {
-  message: string,
-  apiUrl: string,
-  winkingL: boolean,
-  winkingR: boolean,
-};
-
-export type Config = {
-  trufflePigOpts: TPOptions,
-};
+const { red } = chalk;
 
 class TrufflePigUI {
-  _status: Status;
-  _config: Config;
-  _pig: TrufflePig;
-  static setRawMode(enabled: boolean) {
-    if (process.stdin.isTTY) {
-      (process.stdin: any).setRawMode(enabled);
-    }
+  static createScreen() {
+    return blessed.screen({
+      smartCSR: true,
+      title: 'trufflepig',
+    });
   }
-  static unhookKeyboard(): void {
-    process.stdin.pause();
-    TrufflePigUI.setRawMode(false);
+  static createLogo() {
+    return blessed.box({
+      left: 3,
+      width: 27,
+      height: 9,
+      padding: 0,
+      tags: true,
+    });
   }
-  static hookKeyboard(): void {
-    TrufflePigUI.setRawMode(true);
-    process.stdin.resume();
+  static createBox() {
+    return blessed.box({
+      width: '100%',
+      height: '50%',
+      border: {
+        type: 'line',
+      },
+      label: 'TrufflePig - Serving finest truffles since 2017',
+    });
   }
-  constructor(pigConfig: TPOptions) {
-    this._status = {
-      message: '',
-      apiUrl: '',
+  static createLog() {
+    return contrib.log({
+      top: '50%',
+      height: '50%',
+      fg: 'green',
+      selectedFg: 'green',
+      label: 'Pig Log',
+      border: {
+        type: 'line',
+      },
+    });
+  }
+  static createInput() {
+    return blessed.list({
+      top: 1,
+      left: 26,
+      width: '100%-31',
+      height: 8,
+      label: 'What do you want your pig to do?',
+      items: ['Start the truffle console', 'Redeploy contracts', 'Exit'],
+      keys: true,
+      border: {
+        type: 'line',
+      },
+      style: {
+        selected: {
+          bg: '#f28fb1',
+          fg: 'black',
+        },
+      },
+    });
+  }
+  constructor() {
+    this._state = {
       winkingL: false,
       winkingR: false,
     };
-    this._config = {
-      trufflePigOpts: pigConfig,
-    };
-    this.setupServices();
-    this.setupWinks();
+    this._screen = this.constructor.createScreen();
+    const box = this.constructor.createBox();
+    this._logo = this.constructor.createLogo();
+    this._log = this.constructor.createLog();
+    this._input = this.constructor.createInput();
+
+    box.append(this._logo);
+    box.append(this._input);
+
+    this._screen.append(box);
+    this._screen.append(this._log);
   }
-  setupWinks(): void {
-    let changed = false;
-    setInterval(() => {
-      if (changed) {
-        this.update();
-        changed = false;
-      }
-      if (this._status.winkingL || this._status.winkingR) {
-        this._status.winkingL = false;
-        this._status.winkingR = false;
-        changed = true;
+  _setWink() {
+    let timeout;
+    if (this._state.winkingL || this._state.winkingR) {
+      this._state.winkingL = false;
+      this._state.winkingR = false;
+      timeout = 2000;
+    } else {
+      this._state.winkingL = Math.random() > 0.8;
+      this._state.winkingR = this._state.winkingL || Math.random() > 0.85;
+      if (this._state.winkingL || this._state.winkingR) {
+        timeout = 200;
       } else {
-        this._status.winkingL = Math.random() > 0.8;
-        this._status.winkingR = this._status.winkingL || Math.random() > 0.9;
-        changed = this._status.winkingL || this._status.winkingR;
+        timeout = 2000;
       }
-    }, 1000);
-  }
-  setupPig(): void {
-    this._pig = new TrufflePig(this._config.trufflePigOpts);
-    this._pig.on('error', err =>
-      this.update('message', new Error(`Pig server error: ${err}`)),
-    );
-    this._pig.on('log', log => this.update('message', log));
-    this._pig.on('ready', apiUrl => this.update('apiUrl', apiUrl));
-  }
-  setupServices() {
-    this.setupPig();
-  }
-  async start() {
-    this.update();
-    this._pig.start();
-    this.listenToKeyboardEvents();
-  }
-  async close() {
-    this.update(
-      'message',
-      "Shutting down gracefully... (Press CTRL+C if you're impatient)",
-    );
-    this._pig.close();
-    this.constructor.unhookKeyboard();
-    process.exit(0);
-  }
-  spawn(bin: string, args: Array<string>, stdio: Array<string> | string) {
-    this.constructor.unhookKeyboard();
-    const cmd = `${bin} ${args.join(' ')}`;
-    this.update('message', `Running ${cmd}...`);
-    const proc = spawn(`node_modules/.bin/${bin}`, args, {
-      stdio: stdio || 'inherit',
-    });
-    proc.on('error', err => {
-      this.constructor.hookKeyboard();
-      this.update(
-        'message',
-        new Error(`Could not spawn ${cmd}: ${err.message}`),
-      );
-    });
-    proc.on('exit', code => {
-      this.constructor.hookKeyboard();
-      const msg = `${cmd} exited with code ${code}`;
-      if (code > 0) {
-        return this.update('message', new Error(msg));
-      }
-      return this.update('message', msg);
-    });
-  }
-  update(status?: string, val?: any) {
-    if (status) {
-      this._status[status] = val;
     }
-    if (!process.stdin.isRaw) {
-      // Do not update the UI if keyboard is unhooked
-      return;
-    }
-    printMainMenu(this._status, this._config);
+    this._logo.setContent(this._getLogoContent());
+    this._screen.render();
+    this._winkTimeout = setTimeout(this._setWink.bind(this), timeout);
   }
-  async listenToKeyboardEvents() {
-    readline.emitKeypressEvents(process.stdin);
-    TrufflePigUI.setRawMode(true);
-    process.stdin.on('keypress', async (str, key) => {
-      if (!key) {
-        return;
-      }
-      if ((key.ctrl && key.name === 'c') || key.name === 'q') {
-        this.close();
-      }
-      if (key.name === 'd') {
-        this.deployContracts();
-      }
-      if (key.name === 't') {
-        this.spawnTruffleConsole();
-      }
-      if (key.name === 'return') {
-        this.update();
-      }
-    });
-    process.on('SIGINT', () => {
-      console.log('Life is a pigsty 🎵');
-      process.exit(0);
-    });
+  _getLogoContent() {
+    const eyes = () =>
+      `${this._state.winkingL ? '-' : 'O'}${this._state.winkingR ? '-' : 'O'}`;
+
+    const pigLogo = `
+    ┈┈{#f28fb1-fg}┏━╮╭━┓{/}┈┈┈┈┈┈┈
+    ┈┈{#f28fb1-fg}┃┏┗┛┓┃{/}┈┈┈┈┈┈┈
+    ┈┈{#f28fb1-fg}╰┓{/}{#ffffff-fg}${eyes()}{/}{#f28fb1-fg}┏╯{/}┈┈┈┈┈┈┈
+    ┈{#f28fb1-fg}╭━┻╮╲┗━━━━╮╭╮{/}┈
+    ┈{#f28fb1-fg}┃▎▎┃╲╲╲╲╲╲┣━╯{/}┈
+    ┈{#f28fb1-fg}╰━┳┻▅╯╲╲╲╲┃{/}┈┈┈
+    ┈┈┈{#f28fb1-fg}╰━┳┓┏┳┓┏╯{/}┈┈┈
+    ┈┈┈┈┈{#f28fb1-fg}┗┻┛┗┻┛{/}┈┈┈┈
+    `;
+
+    return pigLogo;
   }
-  async deployContracts() {
-    this.spawn('truffle', ['migrate', '--reset', '--compile-all'], 'ignore');
+  onSelect(cb: Function) {
+    this._input.on('select', (_, idx) => cb(idx));
   }
-  spawnTruffleConsole() {
-    this.spawn('truffle', ['console'], 'inherit');
+  log(message: string, type?: string) {
+    const msg = type === 'error' ? red(message) : message;
+    return this._log.log(msg);
+  }
+  start() {
+    this._screen.render();
+    this._setWink();
+    this._input.focus();
+  }
+  stop() {
+    clearTimeout(this._winkTimeout);
+    this._screen.destroy();
   }
 }
+
 module.exports = TrufflePigUI;

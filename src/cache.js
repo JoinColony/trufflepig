@@ -61,7 +61,7 @@ class TrufflePigCache extends EventEmitter {
   }
   async add(path: string): Promise<void> {
     if (this._cache.has(path)) return;
-    this._handleFileChange(path, 'add');
+    this._handleFileChange('add', path);
   }
   async change(path: string): Promise<void> {
     if (!this._cache.has(path)) {

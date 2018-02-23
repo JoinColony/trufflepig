@@ -43,7 +43,7 @@ from your truffle project and access your contracts under
 http://localhost:3030/contracts?name=MyContractName
 ```
 
-and look like this:
+and looks like this:
 
 ```json
 {
@@ -64,7 +64,7 @@ Trufflepig not only helps you to access those delicious truffles but also to eas
 http://localhost:3030/accounts
 ```
 
-and look like this:
+and looks like this:
 
 ```json
 {

@@ -2,7 +2,7 @@
 
 const yargs = require('yargs');
 
-const TrufflePigUI = require('./ui');
+const TrufflePigCLI = require('./cli');
 
 const args = yargs
   .options({
@@ -44,13 +44,13 @@ const args = yargs
   })
   .parse();
 
-const pig = new TrufflePigUI({
+const pig = new TrufflePigCLI({
   contractDir: String(args.contractDir),
   port: parseInt(args.port, 10),
   verbose: !!args.verbose,
-  ganacheKeyFile: String(args.ganacheKeyFile),
-  keystoreDir: String(args.keystoreDir),
-  keystorePassword: String(args.keystorePassword),
+  ganacheKeyFile: args.ganacheKeyFile ? String(args.ganacheKeyFile) : '',
+  keystoreDir: args.keystoreDir ? String(args.keystoreDir) : '',
+  keystorePassword: args.keystorePassword ? String(args.keystorePassword) : '',
 });
 
 pig.start();

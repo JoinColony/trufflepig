@@ -22,9 +22,9 @@ export type Server = {
 
 export type TPOptions = {
   contractDir: string,
-  ganacheKeyFile: string,
-  keystoreDir: string,
-  keystorePassword: string,
+  ganacheKeyFile?: string,
+  keystoreDir?: string,
+  keystorePassword?: string,
   port: number,
   verbose: boolean,
 };
