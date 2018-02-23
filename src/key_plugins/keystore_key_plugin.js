@@ -1,15 +1,30 @@
 /* @flow */
 
-// import Cache from '../cache';
+import { Wallet } from 'ethers-wallet';
+import Cache from '../cache';
 
-// const setup = (
-// files: Array<string> | string,
-// cb: ({ [string]: string }) => any,
-// ) => {
-// const cache = new Cache(files);
-// const parse = (_, accounts) => cb(accounts.private_keys);
-// cache.on('add', parse);
-// cache.on('change', parse);
-// };
+const getWalletData = async (walletData, password) => {
+  const serializedWallet = JSON.stringify(walletData);
+  const wallet = await Wallet.fromEncryptedWallet(serializedWallet, password);
+  return {
+    [wallet.address]: wallet.privateKey,
+  };
+};
 
-// export default setup;
+const setup = (
+  files: Array<string> | string,
+  opts: Object,
+  cb: ({ [string]: string }) => any,
+) => {
+  const cache = new Cache(files, {
+    transform: cacheObject => getWalletData(cacheObject, opts.password),
+  });
+  const parse = () => {
+    cb(Object.assign({}, ...cache.values()));
+  };
+  cache.on('add', parse);
+  cache.on('change', parse);
+  return cache;
+};
+
+export default setup;

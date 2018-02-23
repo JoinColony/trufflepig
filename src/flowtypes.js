@@ -11,16 +11,11 @@ export type Server = {
   close: () => void,
 };
 
-type TPCacheOptions = {
+export type TPOptions = {
   contractDir: string,
-  verbose: boolean,
   ganacheKeyFile: string,
   keystoreDir: string,
-};
-
-type TPServerOptions = {
+  keystorePassword: string,
   port: number,
   verbose: boolean,
 };
-
-export type TPOptions = TPCacheOptions & TPServerOptions;

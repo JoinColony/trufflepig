@@ -39,6 +39,7 @@ export default class TrufflePig extends EventEmitter {
     verbose = false,
     ganacheKeyFile = '',
     keystoreDir = '',
+    keystorePassword = '',
   }: TPOptions) {
     super();
     this._options = {
@@ -47,6 +48,7 @@ export default class TrufflePig extends EventEmitter {
       verbose,
       ganacheKeyFile,
       keystoreDir,
+      keystorePassword,
     };
     this._accounts = {};
   }
@@ -70,16 +72,26 @@ export default class TrufflePig extends EventEmitter {
     });
 
     this._cache.on('error', error => {
-      if (verbose) this.emit('error', error);
+      this.emit('error', error);
     });
   }
   createAccountCache() {
-    const { ganacheKeyFile, keystoreDir } = this._options;
+    const { ganacheKeyFile, keystoreDir, keystorePassword } = this._options;
     if (ganacheKeyFile) {
-      KEY_PLUGINS.ganache(ganacheKeyFile, this.setAccounts.bind(this));
+      const ganacheCache = KEY_PLUGINS.ganache(
+        ganacheKeyFile,
+        {},
+        this.setAccounts.bind(this),
+      );
+      ganacheCache.on('error', this.emit.bind(this, 'error'));
     }
     if (keystoreDir) {
-      KEY_PLUGINS.keystore(keystoreDir, this.setAccounts.bind(this));
+      const keystoreCache = KEY_PLUGINS.keystore(
+        keystoreDir,
+        { password: keystorePassword },
+        this.setAccounts.bind(this),
+      );
+      keystoreCache.on('error', this.emit.bind(this, 'error'));
     }
   }
   createServer() {
@@ -106,7 +118,6 @@ export default class TrufflePig extends EventEmitter {
       },
     );
     this._server.get(ACCOUNTS_ENDPOINT, (req: $Request, res: $Response) => {
-      // TODO: For now just return an empty object
       res.json(this._accounts);
     });
 

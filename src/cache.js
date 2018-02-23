@@ -6,12 +6,19 @@ import chokidar from 'chokidar';
 import EventEmitter from 'events';
 
 type CacheObject = Object | null;
+type TransformFunction = CacheObject => CacheObject;
 type Cache = Map<string, Object>;
+type CacheOpts = {
+  transform: TransformFunction,
+};
+
+const identity: TransformFunction = i => i;
 
 export default class TrufflePigCache extends EventEmitter {
   _cache: Cache;
   _watcher: any;
-  constructor(paths: Array<string> | string) {
+  _transform: TransformFunction;
+  constructor(paths: Array<string> | string, { transform }: CacheOpts = {}) {
     super();
     this._cache = new Map();
     this._watcher = chokidar.watch(paths, {
@@ -22,6 +29,7 @@ export default class TrufflePigCache extends EventEmitter {
       .on('change', async path => this.change(path))
       .on('error', error => this.emit('error', error))
       .on('unlink', path => this.remove(path));
+    this._transform = transform || identity;
   }
   async _readFile(path: string): Promise<CacheObject> {
     let contents: string;
@@ -40,10 +48,16 @@ export default class TrufflePigCache extends EventEmitter {
   }
   async add(path: string): Promise<void> {
     if (this._cache.has(path)) return;
-    const cacheObject = await this._readFile(path);
-    if (cacheObject) {
-      this._cache.set(path, cacheObject);
-      this.emit('add', path, cacheObject);
+    let transformed;
+    try {
+      const cacheObject = await this._readFile(path);
+      transformed = await this._transform(cacheObject);
+    } catch (e) {
+      this.emit('error', `CacheError: ${e.message}`);
+    }
+    if (transformed) {
+      this._cache.set(path, transformed);
+      this.emit('add', path, transformed);
     }
   }
   async change(path: string): Promise<void> {
@@ -51,14 +65,23 @@ export default class TrufflePigCache extends EventEmitter {
       this.emit('error', `Can not change non existing path ${path}`);
       return;
     }
-    const cacheObject = await this._readFile(path);
-    if (cacheObject) {
-      this._cache.set(path, cacheObject);
-      this.emit('change', path, cacheObject);
+    let transformed;
+    try {
+      const cacheObject = await this._readFile(path);
+      transformed = await this._transform(cacheObject);
+    } catch (e) {
+      this.emit('error', `CacheError: ${e.message}`);
+    }
+    if (transformed) {
+      this._cache.set(path, transformed);
+      this.emit('change', path, transformed);
     }
   }
   get(path: string): CacheObject {
     return this._cache.get(path) || null;
+  }
+  values(): Array<CacheObject> {
+    return Array.from(this._cache.values());
   }
   close(): void {
     this._watcher.close();

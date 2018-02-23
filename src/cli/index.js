@@ -37,6 +37,10 @@ const args = yargs
         'Directory for keystore files, will serve accounts under /accounts',
       type: 'string',
     },
+    s: {
+      alias: 'keystorePassword',
+      describe: 'Password to decrypt keystore files',
+    },
   })
   .parse();
 
@@ -46,6 +50,7 @@ const pig = new TrufflePigUI({
   verbose: !!args.verbose,
   ganacheKeyFile: String(args.ganacheKeyFile),
   keystoreDir: String(args.keystoreDir),
+  keystorePassword: String(args.keystorePassword),
 });
 
 (async () => {
