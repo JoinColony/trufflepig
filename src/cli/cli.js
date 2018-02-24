@@ -2,27 +2,18 @@
 
 import type { TPOptions } from '../flowtypes';
 
-export type Status = {
-  message: string,
-};
-
 export type Config = {
   trufflePigOpts: TPOptions,
 };
-
-const { spawn } = require('child_process');
 
 const TrufflePig = require('../');
 const TrufflePigUI = require('./ui');
 
 class TrufflePigCLI {
-  _status: Status;
   _config: Config;
   _pig: TrufflePig;
+  _ui: TrufflePigUI;
   constructor(pigConfig: TPOptions) {
-    this._status = {
-      message: '',
-    };
     this._config = {
       trufflePigOpts: pigConfig,
     };
@@ -66,31 +57,11 @@ class TrufflePigCLI {
     this._ui.stop();
     process.exit(0);
   }
-  spawn(bin: string, args: Array<string>, stdio: Array<string> | string) {
-    const cmd = `${bin} ${args.join(' ')}`;
-    this._ui.log(`Running ${cmd}...`);
-    const proc = spawn(`node_modules/.bin/${bin}`, args, {
-      stdio: stdio || 'inherit',
-    });
-    proc.on('error', err => {
-      this._ui.log(
-        new Error(`Could not spawn ${cmd}: ${err.message}`),
-        'error',
-      );
-    });
-    proc.on('exit', code => {
-      const msg = `${cmd} exited with code ${code}`;
-      if (code > 0) {
-        return this._ui.log(new Error(msg), 'error');
-      }
-      return this._ui.log(msg);
-    });
-  }
   async deployContracts() {
-    this.spawn('truffle', ['migrate', '--reset', '--compile-all'], 'ignore');
+    this._ui.spawn('truffle', ['migrate', '--reset', '--compile-all']);
   }
   spawnTruffleConsole() {
-    this.spawn('truffle', ['console'], 'inherit');
+    this._ui.spawn('truffle', ['console']);
   }
 }
 module.exports = TrufflePigCLI;

@@ -54,8 +54,8 @@ class TrufflePig extends EventEmitter {
     };
     this._accounts = {};
   }
-  apiUrl(): string {
-    return `http://127.0.0.1:${this._options.port}${CONTRACTS_ENDPOINT}`;
+  apiUrl(endpoint: string): string {
+    return `http://127.0.0.1:${this._options.port}${endpoint}`;
   }
   createCache() {
     const { contractDir, verbose } = this._options;
@@ -79,6 +79,12 @@ class TrufflePig extends EventEmitter {
   }
   createAccountCache() {
     const { ganacheKeyFile, keystoreDir, keystorePassword } = this._options;
+    if (ganacheKeyFile || keystoreDir) {
+      this.emit(
+        'log',
+        `Serving accounts under ${this.apiUrl(ACCOUNTS_ENDPOINT)}`,
+      );
+    }
     if (ganacheKeyFile) {
       const ganacheCache = KEY_PLUGINS.ganache(
         ganacheKeyFile,
@@ -124,7 +130,7 @@ class TrufflePig extends EventEmitter {
     });
 
     this._listener = this._server.listen(port, () => {
-      this.emit('ready', this.apiUrl());
+      this.emit('ready', this.apiUrl(CONTRACTS_ENDPOINT));
     });
   }
   start(): void {
@@ -139,7 +145,9 @@ class TrufflePig extends EventEmitter {
     this._cache.close();
   }
   getConfig(): TPOptions & { apiUrl: string } {
-    return Object.assign({}, this._options, { apiUrl: this.apiUrl() });
+    return Object.assign({}, this._options, {
+      apiUrl: this.apiUrl(CONTRACTS_ENDPOINT),
+    });
   }
   setAccounts(accounts: Accounts): void {
     this._accounts = Object.assign({}, accounts);

@@ -1,12 +1,27 @@
 /* @flow */
 
+type State = {
+  winkingL: boolean,
+  winkingR: boolean,
+};
+
+type BlessedNode = Object;
+
 const blessed = require('blessed');
 const contrib = require('blessed-contrib');
 const chalk = require('chalk');
+const path = require('path');
 
 const { red } = chalk;
 
 class TrufflePigUI {
+  _screen: BlessedNode;
+  _logo: BlessedNode;
+  _log: BlessedNode;
+  _input: BlessedNode;
+  _state: State;
+  // eslint-disable-next-line no-undef
+  _winkTimeout: TimeoutID;
   static createScreen() {
     return blessed.screen({
       smartCSR: true,
@@ -15,6 +30,7 @@ class TrufflePigUI {
   }
   static createLogo() {
     return blessed.box({
+      top: 'center',
       left: 3,
       width: 27,
       height: 9,
@@ -46,9 +62,9 @@ class TrufflePigUI {
   }
   static createInput() {
     return blessed.list({
-      top: 1,
-      left: 26,
-      width: '100%-31',
+      top: 'center',
+      left: 23,
+      width: '100%-29',
       height: 8,
       label: 'What do you want your pig to do?',
       items: ['Start the truffle console', 'Redeploy contracts', 'Exit'],
@@ -104,17 +120,14 @@ class TrufflePigUI {
     const eyes = () =>
       `${this._state.winkingL ? '-' : 'O'}${this._state.winkingR ? '-' : 'O'}`;
 
-    const pigLogo = `
-    ┈┈{#f28fb1-fg}┏━╮╭━┓{/}┈┈┈┈┈┈┈
-    ┈┈{#f28fb1-fg}┃┏┗┛┓┃{/}┈┈┈┈┈┈┈
-    ┈┈{#f28fb1-fg}╰┓{/}{#ffffff-fg}${eyes()}{/}{#f28fb1-fg}┏╯{/}┈┈┈┈┈┈┈
-    ┈{#f28fb1-fg}╭━┻╮╲┗━━━━╮╭╮{/}┈
-    ┈{#f28fb1-fg}┃▎▎┃╲╲╲╲╲╲┣━╯{/}┈
-    ┈{#f28fb1-fg}╰━┳┻▅╯╲╲╲╲┃{/}┈┈┈
-    ┈┈┈{#f28fb1-fg}╰━┳┓┏┳┓┏╯{/}┈┈┈
-    ┈┈┈┈┈{#f28fb1-fg}┗┻┛┗┻┛{/}┈┈┈┈
-    `;
-
+    const pigLogo = `┈┈{#f28fb1-fg}┏━╮╭━┓{/}┈┈┈┈┈┈┈
+┈┈{#f28fb1-fg}┃┏┗┛┓┃{/}┈┈┈┈┈┈┈
+┈┈{#f28fb1-fg}╰┓{/}{#ffffff-fg}${eyes()}{/}{#f28fb1-fg}┏╯{/}┈┈┈┈┈┈┈
+┈{#f28fb1-fg}╭━┻╮╲┗━━━━╮╭╮{/}┈
+┈{#f28fb1-fg}┃▎▎┃╲╲╲╲╲╲┣━╯{/}┈
+┈{#f28fb1-fg}╰━┳┻▅╯╲╲╲╲┃{/}┈┈┈
+┈┈┈{#f28fb1-fg}╰━┳┓┏┳┓┏╯{/}┈┈┈
+┈┈┈┈┈{#f28fb1-fg}┗┻┛┗┻┛{/}┈┈┈┈`;
     return pigLogo;
   }
   onSelect(cb: Function) {
@@ -123,6 +136,35 @@ class TrufflePigUI {
   log(message: string, type?: string) {
     const msg = type === 'error' ? red(message) : message;
     return this._log.log(msg);
+  }
+  spawn(command: string, args: Array<string>) {
+    const terminal = blessed.terminal({
+      parent: this._screen,
+      shell: path.join(__dirname, '..', '..', 'bin', 'shell.js'),
+      args: [process.cwd(), command, ...args],
+      top: '50%',
+      height: '50%',
+      fg: 'green',
+      selectedFg: 'green',
+      label: `Console: ${command}`,
+      border: {
+        type: 'line',
+      },
+    });
+
+    terminal.focus();
+
+    terminal.on('exit', code => {
+      if (code < 1) {
+        terminal.destroy();
+        this._input.focus();
+      } else {
+        this._screen.onceKey('enter', () => {
+          terminal.destroy();
+          this._input.focus();
+        });
+      }
+    });
   }
   start() {
     this._screen.render();
