@@ -30,7 +30,7 @@
     "James Lefrère <james@colony.io>",
     "Christian Maniewski <chris@colony.io>"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "lint-staged": {
     "src/{,**/}*.js": [
       "lint --fix",
