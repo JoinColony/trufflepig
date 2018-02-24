@@ -1,6 +1,6 @@
 {
   "name": "trufflepig",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Truffle contract artifact loading tool for local development",
   "main": "lib/index.js",
   "bin": "bin/trufflepig.js",
