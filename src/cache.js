@@ -22,6 +22,7 @@ class TrufflePigCache extends EventEmitter {
     super();
     this._cache = new Map();
     this._watcher = chokidar.watch(paths, {
+      awaitWriteFinish: true,
       persistent: true,
     });
     this._watcher
