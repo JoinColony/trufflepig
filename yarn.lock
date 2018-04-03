@@ -345,9 +345,9 @@ blessed-contrib@^4.8.5:
     term-canvas "0.0.5"
     x256 ">=0.0.1"
 
-"blessed@git://github.com/Dwood15/blessed#v0.1.81":
+blessed@^0.1.81:
   version "0.1.81"
-  resolved "git://github.com/Dwood15/blessed#a45575fee63fac158fd467087ec172f657bfec6b"
+  resolved "https://registry.yarnpkg.com/blessed/-/blessed-0.1.81.tgz#f962d687ec2c369570ae71af843256e6d0ca1129"
 
 block-stream@*:
   version "0.0.9"
@@ -2400,7 +2400,7 @@ nan@2.3.5:
   version "2.3.5"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.3.5.tgz#822a0dc266290ce4cd3a12282ca3e7e364668a08"
 
-nan@^2.3.0, nan@^2.6.2:
+nan@^2.3.0:
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.9.2.tgz#f564d75f5f8f36a6d9456cca7a6c4fe488ab7866"
 
@@ -2450,12 +2450,6 @@ node-pre-gyp@^0.6.39:
     semver "^5.3.0"
     tar "^2.2.1"
     tar-pack "^3.4.0"
-
-node-pty@^0.7.4:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/node-pty/-/node-pty-0.7.4.tgz#07146b2b40b76e432e57ce6750bda40f0da5c99f"
-  dependencies:
-    nan "^2.6.2"
 
 nodemon@^1.15.1:
   version "1.17.1"
@@ -3520,9 +3514,9 @@ term-size@^1.2.0:
   dependencies:
     execa "^0.7.0"
 
-"term.js@git://github.com/JoinColony/term.js#ef034d2b2ab92123aef21ecaeb08bb3f412d342a":
+term.js@^0.0.7:
   version "0.0.7"
-  resolved "git://github.com/JoinColony/term.js#ef034d2b2ab92123aef21ecaeb08bb3f412d342a"
+  resolved "https://registry.yarnpkg.com/term.js/-/term.js-0.0.7.tgz#526f24cfc0f2ef6f80f517c9e27dae947bc87315"
 
 text-table@~0.2.0:
   version "0.2.0"
