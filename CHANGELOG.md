@@ -1,5 +1,8 @@
 ## trufflepig changelog
 
+### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.0.3) ] 1.0.2 / 11.05.2018
+* Make `start` asynchronous, and wait for the cache to be ready
+
 ### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.0.2) ] 1.0.2 / 03.04.2018
 * Fix reporting of changes for unfinished writes
 
