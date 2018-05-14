@@ -29,7 +29,15 @@ class TrufflePigCache extends EventEmitter {
       .on('add', async path => this.add(path))
       .on('change', async path => this.change(path))
       .on('error', error => this.emit('error', error))
-      .on('unlink', path => this.remove(path));
+      .on('unlink', path => this.remove(path))
+      .on('ready', () => {
+        const interval = setInterval(() => {
+          if (this._cache.size) {
+            clearInterval(interval);
+            this.emit('ready');
+          }
+        }, 1000);
+      });
     this._transform = transform || identity;
   }
   async _readFile(path: string): Promise<CacheObject> {

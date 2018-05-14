@@ -57,7 +57,7 @@ class TrufflePig extends EventEmitter {
   apiUrl(endpoint: string): string {
     return `http://127.0.0.1:${this._options.port}${endpoint}`;
   }
-  createCache() {
+  async createCache() {
     const { contractDir, verbose } = this._options;
     this._cache = new ContractCache(contractDir);
 
@@ -75,6 +75,13 @@ class TrufflePig extends EventEmitter {
 
     this._cache.on('error', error => {
       this.emit('error', error);
+    });
+
+    return new Promise(resolve => {
+      this._cache.once('ready', () => {
+        if (verbose) this.emit('log', 'Cache ready');
+        resolve();
+      });
     });
   }
   createAccountCache() {
@@ -133,8 +140,8 @@ class TrufflePig extends EventEmitter {
       this.emit('ready', this.apiUrl(CONTRACTS_ENDPOINT));
     });
   }
-  start(): void {
-    this.createCache();
+  async start(): Promise<void> {
+    await this.createCache();
     this.createAccountCache();
     this.createServer();
   }
