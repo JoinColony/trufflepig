@@ -151,3 +151,7 @@ pig.start();
 ```
 
 **That's it!** Have a lot of fun truffleing!
+
+License
+-------
+MIT
