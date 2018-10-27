@@ -21,12 +21,9 @@ class TrufflePigCLI {
     this._ui.onSelect(idx => {
       switch (idx) {
         case 0:
-          this.spawnTruffleConsole();
-          break;
-        case 1:
           this.deployContracts();
           break;
-        case 2:
+        case 1:
           this.close();
           break;
         default:
@@ -59,9 +56,6 @@ class TrufflePigCLI {
   }
   async deployContracts() {
     this._ui.spawn('truffle', ['migrate', '--reset', '--compile-all']);
-  }
-  spawnTruffleConsole() {
-    this._ui.spawn('truffle', ['console']);
   }
 }
 module.exports = TrufflePigCLI;
