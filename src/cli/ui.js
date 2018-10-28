@@ -10,7 +10,7 @@ type BlessedNode = Object;
 const blessed = require('blessed');
 const contrib = require('blessed-contrib');
 const chalk = require('chalk');
-const path = require('path');
+const { spawn } = require('child_process');
 
 const { red } = chalk;
 
@@ -67,7 +67,7 @@ class TrufflePigUI {
       width: '100%-29',
       height: 8,
       label: 'What do you want your pig to do?',
-      items: ['Start the truffle console', 'Redeploy contracts', 'Exit'],
+      items: ['Redeploy contracts', 'Exit'],
       keys: true,
       border: {
         type: 'line',
@@ -138,29 +138,21 @@ class TrufflePigUI {
     return this._log.log(msg);
   }
   spawn(command: string, args: Array<string>) {
-    const terminal = blessed.terminal({
-      parent: this._screen,
-      shell: path.join(__dirname, '..', '..', 'bin', 'shell.js'),
-      args: [process.cwd(), command, ...args],
-      top: '50%',
-      height: '50%',
-      fg: 'green',
-      selectedFg: 'green',
-      label: `Console: ${command}`,
-      border: {
-        type: 'line',
-      },
+    const cmd = spawn(command, args, {
+      cwd: process.cwd(),
     });
 
-    terminal.focus();
+    cmd.stdout.on('data', this.log);
 
-    terminal.on('exit', code => {
+    cmd.stderr.on('data', data => this.log(data, 'error'));
+
+    cmd.on('error', data => this.log(data, 'error'));
+
+    cmd.on('close', code => {
       if (code < 1) {
-        terminal.destroy();
         this._input.focus();
       } else {
         this._screen.onceKey('enter', () => {
-          terminal.destroy();
           this._input.focus();
         });
       }
