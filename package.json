@@ -18,6 +18,7 @@
     "flow": "flow check",
     "lint": "eslint src",
     "precommit": "lint-staged",
+    "prepublish": "yarn run precommit && yarn run build",
     "test": "yarn run flow && yarn run lint"
   },
   "keywords": [
