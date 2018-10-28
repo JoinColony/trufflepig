@@ -21,6 +21,7 @@ class ContractCache extends TrufflePigCache {
     // TODO later: if the need arises, support limiting by fields other than name
     return query.name === contract.contractName;
   }
+
   contractNames() {
     return {
       contractNames: [...this._cache.values()].map(
@@ -28,11 +29,13 @@ class ContractCache extends TrufflePigCache {
       ),
     };
   }
+
   findContracts(query: Query) {
     return [...this._cache.values()].filter(contract =>
       this.constructor.contractMatchesQuery(contract, query),
     );
   }
+
   findContract(query: Query) {
     return [...this._cache.values()].find(contract =>
       this.constructor.contractMatchesQuery(contract, query),

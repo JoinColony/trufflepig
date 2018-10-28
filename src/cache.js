@@ -16,8 +16,11 @@ const identity: TransformFunction = i => i;
 
 class TrufflePigCache extends EventEmitter {
   _cache: Cache;
+
   _watcher: any;
+
   _transform: TransformFunction;
+
   constructor(paths: Array<string> | string, { transform }: CacheOpts = {}) {
     super();
     this._cache = new Map();
@@ -40,6 +43,7 @@ class TrufflePigCache extends EventEmitter {
       });
     this._transform = transform || identity;
   }
+
   async _readFile(path: string): Promise<CacheObject> {
     let contents: string;
     try {
@@ -55,6 +59,7 @@ class TrufflePigCache extends EventEmitter {
       return null;
     }
   }
+
   async _handleFileChange(evt: string, path: string): Promise<void> {
     let result;
     try {
@@ -68,10 +73,12 @@ class TrufflePigCache extends EventEmitter {
       this.emit(evt, path, result);
     }
   }
+
   async add(path: string): Promise<void> {
     if (this._cache.has(path)) return;
     this._handleFileChange('add', path);
   }
+
   async change(path: string): Promise<void> {
     if (!this._cache.has(path)) {
       this.emit('error', `Can not change non existing path ${path}`);
@@ -79,15 +86,19 @@ class TrufflePigCache extends EventEmitter {
     }
     this._handleFileChange('change', path);
   }
+
   get(path: string): CacheObject {
     return this._cache.get(path) || null;
   }
+
   values(): Array<CacheObject> {
     return Array.from(this._cache.values());
   }
+
   close(): void {
     this._watcher.close();
   }
+
   remove(path: string): void {
     this._cache.delete(path);
     this.emit('remove', path);

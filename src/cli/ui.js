@@ -16,18 +16,25 @@ const { red } = chalk;
 
 class TrufflePigUI {
   _screen: BlessedNode;
+
   _logo: BlessedNode;
+
   _log: BlessedNode;
+
   _input: BlessedNode;
+
   _state: State;
+
   // eslint-disable-next-line no-undef
   _winkTimeout: TimeoutID;
+
   static createScreen() {
     return blessed.screen({
       smartCSR: true,
       title: 'trufflepig',
     });
   }
+
   static createLogo() {
     return blessed.box({
       top: 'center',
@@ -38,6 +45,7 @@ class TrufflePigUI {
       tags: true,
     });
   }
+
   static createBox() {
     return blessed.box({
       width: '100%',
@@ -48,6 +56,7 @@ class TrufflePigUI {
       label: 'TrufflePig - Serving finest truffles since 2017',
     });
   }
+
   static createLog() {
     return contrib.log({
       top: '50%',
@@ -60,6 +69,7 @@ class TrufflePigUI {
       },
     });
   }
+
   static createInput() {
     return blessed.list({
       top: 'center',
@@ -80,6 +90,7 @@ class TrufflePigUI {
       },
     });
   }
+
   constructor() {
     this._state = {
       winkingL: false,
@@ -97,6 +108,7 @@ class TrufflePigUI {
     this._screen.append(box);
     this._screen.append(this._log);
   }
+
   _setWink() {
     let timeout;
     if (this._state.winkingL || this._state.winkingR) {
@@ -116,6 +128,7 @@ class TrufflePigUI {
     this._screen.render();
     this._winkTimeout = setTimeout(this._setWink.bind(this), timeout);
   }
+
   _getLogoContent() {
     const eyes = () =>
       `${this._state.winkingL ? '-' : 'O'}${this._state.winkingR ? '-' : 'O'}`;
@@ -130,13 +143,16 @@ class TrufflePigUI {
 ┈┈┈┈┈{#f28fb1-fg}┗┻┛┗┻┛{/}┈┈┈┈`;
     return pigLogo;
   }
+
   onSelect(cb: Function) {
     this._input.on('select', (_, idx) => cb(idx));
   }
+
   log(message: string, type?: string) {
     const msg = type === 'error' ? red(message) : message;
     return this._log.log(msg);
   }
+
   spawn(command: string, args: Array<string>) {
     const cmd = spawn(command, args, {
       cwd: process.cwd(),
@@ -158,11 +174,13 @@ class TrufflePigUI {
       }
     });
   }
+
   start() {
     this._screen.render();
     this._setWink();
     this._input.focus();
   }
+
   stop() {
     clearTimeout(this._winkTimeout);
     this._screen.destroy();

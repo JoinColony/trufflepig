@@ -31,10 +31,15 @@ const CORS_OPTIONS = {
 
 class TrufflePig extends EventEmitter {
   _accounts: Accounts;
+
   _cache: ContractCache;
+
   _listener: ?Server;
+
   _options: TPOptions;
+
   _server: $Application;
+
   constructor({
     contractDir,
     port = DEFAULT_PIG_PORT,
@@ -54,9 +59,11 @@ class TrufflePig extends EventEmitter {
     };
     this._accounts = {};
   }
+
   apiUrl(endpoint: string): string {
     return `http://127.0.0.1:${this._options.port}${endpoint}`;
   }
+
   async createCache() {
     const { contractDir, verbose } = this._options;
     this._cache = new ContractCache(contractDir);
@@ -84,6 +91,7 @@ class TrufflePig extends EventEmitter {
       });
     });
   }
+
   createAccountCache() {
     const { ganacheKeyFile, keystoreDir, keystorePassword } = this._options;
     if (ganacheKeyFile || keystoreDir) {
@@ -109,6 +117,7 @@ class TrufflePig extends EventEmitter {
       keystoreCache.on('error', this.emit.bind(this, 'error'));
     }
   }
+
   createServer() {
     const { port, verbose } = this._options;
     this._server = express();
@@ -140,22 +149,26 @@ class TrufflePig extends EventEmitter {
       this.emit('ready', this.apiUrl(CONTRACTS_ENDPOINT));
     });
   }
+
   async start(): Promise<void> {
     await this.createCache();
     this.createAccountCache();
     this.createServer();
   }
+
   close(): void {
     if (this._listener) {
       this._listener.close();
     }
     this._cache.close();
   }
+
   getConfig(): TPOptions & { apiUrl: string } {
     return Object.assign({}, this._options, {
       apiUrl: this.apiUrl(CONTRACTS_ENDPOINT),
     });
   }
+
   setAccounts(accounts: Accounts): void {
     this._accounts = Object.assign({}, accounts);
   }
