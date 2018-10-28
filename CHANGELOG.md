@@ -1,5 +1,11 @@
 ## trufflepig changelog
 
+### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.1.0) ] 1.1.0 / 28.10.2018
+* Update @colony/eslint-config-colony to v7.0.0 (including it's peerDeps)
+* Remove truffle console option due to incompatibilities
+* Add pre-publish hook
+* Set used node version to 10.12.0
+
 ### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.0.3) ] 1.0.2 / 11.05.2018
 * Make `start` asynchronous, and wait for the cache to be ready
 
