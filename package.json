@@ -43,7 +43,7 @@
     "blessed-contrib": "^4.8.5",
     "chalk": "^2.3.0",
     "chokidar": "^2.0.0",
-    "cors": "^2.8.4",
+    "cors": "^2.8.5",
     "ethers-wallet": "^2.1.8",
     "express": "^4.16.2",
     "yargs": "^11.0.0"
