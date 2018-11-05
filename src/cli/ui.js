@@ -8,7 +8,6 @@ type State = {
 type BlessedNode = Object;
 
 const blessed = require('blessed');
-const contrib = require('blessed-contrib');
 const chalk = require('chalk');
 const { spawn } = require('child_process');
 
@@ -58,7 +57,7 @@ class TrufflePigUI {
   }
 
   static createLog() {
-    return contrib.log({
+    return blessed.log({
       top: '50%',
       height: '50%',
       fg: 'green',
