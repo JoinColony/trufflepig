@@ -1,5 +1,10 @@
 ## trufflepig changelog
 
+### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.1.1) ] 1.1.1 / 05.11.2018
+* Remove blessed-contrib as it is not needed anymore
+* Fix truffle command
+* Fix logging commands
+
 ### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.1.0) ] 1.1.0 / 28.10.2018
 * Update @colony/eslint-config-colony to v7.0.0 (including it's peerDeps)
 * Remove truffle console option due to incompatibilities
