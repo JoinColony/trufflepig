@@ -152,28 +152,6 @@ class TrufflePigUI {
     return this._log.log(msg);
   }
 
-  spawn(command: string, args: Array<string>) {
-    const cmd = spawn(command, args, {
-      cwd: process.cwd(),
-    });
-
-    cmd.stdout.on('data', this.log);
-
-    cmd.stderr.on('data', data => this.log(data, 'error'));
-
-    cmd.on('error', data => this.log(data, 'error'));
-
-    cmd.on('close', code => {
-      if (code < 1) {
-        this._input.focus();
-      } else {
-        this._screen.onceKey('enter', () => {
-          this._input.focus();
-        });
-      }
-    });
-  }
-
   start() {
     this._screen.render();
     this._setWink();
@@ -184,6 +162,30 @@ class TrufflePigUI {
     clearTimeout(this._winkTimeout);
     this._screen.destroy();
   }
-}
 
+  spawn(command: string, args: Array<string> = []) {
+    this.log(`🐽 Spawning ${command} ${args.join(' ')} ...`);
+    const cmd = spawn(command, args);
+
+    const logData = data => {
+      this.log(data.toString());
+    };
+    const logError = err => {
+      this.log(err.toString(), 'error');
+    };
+    cmd.stdout.on('data', logData);
+    cmd.stderr.on('data', logError);
+    cmd.on('error', logError);
+    cmd.on('close', code => {
+      this.log('✨ Done');
+      if (code < 1) {
+        this._input.focus();
+      } else {
+        this._screen.onceKey('enter', () => {
+          this._input.focus();
+        });
+      }
+    });
+  }
+}
 module.exports = TrufflePigUI;
