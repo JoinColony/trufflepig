@@ -62,7 +62,11 @@ class TrufflePigCLI {
   }
 
   async deployContracts() {
-    this._ui.spawn('truffle', ['migrate', '--reset', '--compile-all']);
+    this._ui.spawn('./node_modules/.bin/truffle', [
+      'migrate',
+      '--reset',
+      '--compile-all',
+    ]);
   }
 }
 module.exports = TrufflePigCLI;
