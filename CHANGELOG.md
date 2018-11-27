@@ -1,5 +1,8 @@
 ## trufflepig changelog
 
+### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.1.2) ] 1.1.2 / 27.11.2018
+* Add persistence chokidar option so that we can do a proper teardown
+
 ### [ [>](https://github.com/JoinColony/trufflepig/tree/v1.1.1) ] 1.1.1 / 05.11.2018
 * Remove blessed-contrib as it is not needed anymore
 * Fix truffle command
