@@ -41,6 +41,7 @@ class TrufflePig extends EventEmitter {
   _server: $Application;
 
   constructor({
+    cacheOptions,
     contractDir,
     port = DEFAULT_PIG_PORT,
     verbose = false,
@@ -50,6 +51,7 @@ class TrufflePig extends EventEmitter {
   }: TPOptions) {
     super();
     this._options = {
+      cacheOptions,
       contractDir,
       port,
       verbose,
@@ -65,8 +67,8 @@ class TrufflePig extends EventEmitter {
   }
 
   async createCache() {
-    const { contractDir, verbose } = this._options;
-    this._cache = new ContractCache(contractDir);
+    const { contractDir, verbose, cacheOptions } = this._options;
+    this._cache = new ContractCache(contractDir, cacheOptions);
 
     this._cache.on('add', path => {
       if (verbose) this.emit('log', `Cache added: ${path}`);
@@ -93,7 +95,12 @@ class TrufflePig extends EventEmitter {
   }
 
   createAccountCache() {
-    const { ganacheKeyFile, keystoreDir, keystorePassword } = this._options;
+    const {
+      cacheOptions,
+      ganacheKeyFile,
+      keystoreDir,
+      keystorePassword,
+    } = this._options;
     if (ganacheKeyFile || keystoreDir) {
       this.emit(
         'log',
@@ -103,7 +110,7 @@ class TrufflePig extends EventEmitter {
     if (ganacheKeyFile) {
       const ganacheCache = KEY_PLUGINS.ganache(
         ganacheKeyFile,
-        {},
+        { cacheOptions },
         this.setAccounts.bind(this),
       );
       ganacheCache.on('error', this.emit.bind(this, 'error'));
@@ -111,7 +118,7 @@ class TrufflePig extends EventEmitter {
     if (keystoreDir) {
       const keystoreCache = KEY_PLUGINS.keystore(
         keystoreDir,
-        { password: keystorePassword },
+        { cacheOptions, password: keystorePassword },
         this.setAccounts.bind(this),
       );
       keystoreCache.on('error', this.emit.bind(this, 'error'));
