@@ -6,10 +6,10 @@ const Cache = require('../cache');
 
 const setup = (
   files: Array<string> | string,
-  opts: Object,
+  { cacheOptions }: Object,
   cb: Accounts => any,
 ) => {
-  const cache = new Cache(files);
+  const cache = new Cache(files, cacheOptions);
   // eslint-disable-next-line camelcase
   const parse = (_, { private_keys }) => {
     // We have to normalize the keys here and append 0x

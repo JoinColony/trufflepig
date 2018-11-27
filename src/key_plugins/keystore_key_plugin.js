@@ -18,11 +18,12 @@ const getWalletData = async (
 
 const setup = (
   files: Array<string> | string,
-  opts: Object,
+  { password, cacheOptions }: Object,
   cb: Accounts => any,
 ) => {
   const cache = new Cache(files, {
-    transform: cacheObject => getWalletData(cacheObject, opts.password),
+    transform: cacheObject => getWalletData(cacheObject, password),
+    ...cacheOptions,
   });
   const parse = () => {
     cb(Object.assign({}, ...cache.values()));

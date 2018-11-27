@@ -6,7 +6,8 @@ export type CacheObject = Object | null;
 export type TransformFunction = CacheObject => CacheObject;
 export type Cache = Map<string, Object>;
 export type CacheOpts = {
-  transform: TransformFunction,
+  transform?: TransformFunction,
+  persistent?: boolean,
 };
 
 // Because of https://github.com/facebook/flow/issues/5113
@@ -21,6 +22,7 @@ export type Server = {
 };
 
 export type TPOptions = {
+  cacheOptions?: CacheOpts,
   contractDir: string,
   ganacheKeyFile?: string,
   keystoreDir?: string,

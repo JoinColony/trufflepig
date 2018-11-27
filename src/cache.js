@@ -21,12 +21,15 @@ class TrufflePigCache extends EventEmitter {
 
   _transform: TransformFunction;
 
-  constructor(paths: Array<string> | string, { transform }: CacheOpts = {}) {
+  constructor(
+    paths: Array<string> | string,
+    { transform, persistent = true }: CacheOpts = {},
+  ) {
     super();
     this._cache = new Map();
     this._watcher = chokidar.watch(paths, {
       awaitWriteFinish: true,
-      persistent: true,
+      persistent,
     });
     this._watcher
       .on('add', async path => this.add(path))
