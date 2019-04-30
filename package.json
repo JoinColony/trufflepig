@@ -41,7 +41,7 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "chalk": "^2.3.0",
-    "chokidar": "^2.0.0",
+    "chokidar": "^3.0.0",
     "cors": "^2.8.4",
     "ethers-wallet": "^2.1.8",
     "express": "^4.16.2",
