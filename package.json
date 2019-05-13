@@ -45,7 +45,7 @@
     "cors": "^2.8.4",
     "ethers-wallet": "^2.1.8",
     "express": "^4.16.2",
-    "yargs": "^11.0.0"
+    "yargs": "^13.2.4"
   },
   "devDependencies": {
     "@colony/eslint-config-colony": "^7.0.0",
