@@ -44,7 +44,7 @@
     "chokidar": "^2.0.0",
     "cors": "^2.8.4",
     "ethers-wallet": "^2.1.8",
-    "express": "^4.16.2",
+    "express": "^4.17.0",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
