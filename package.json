@@ -53,7 +53,7 @@
     "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^3.1.0",
-    "eslint-plugin-flowtype": "^3.1.1",
+    "eslint-plugin-flowtype": "^4.0.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "^3.0.0",
     "flow-bin": "^0.84.0",
