@@ -317,11 +317,6 @@ babel-eslint@^10.0.1:
     eslint-scope "3.7.1"
     eslint-visitor-keys "^1.0.0"
 
-babylon@^6.15.0:
-  version "6.18.0"
-  resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.18.0.tgz#af2f3b88fa6f5c1e4c634d1a0f8eac4f55b395e3"
-  integrity sha512-q/UEjfGJ2Cm3oKV71DJz9d25TPnq5rhBVL2Q4fA5wcC3jcrdn7+SssEybFIxwAvvP+YCsCYNKughoF33GxgycQ==
-
 balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
@@ -1450,12 +1445,18 @@ flow-copy-source@^1.3.0:
     kefir "^3.7.3"
     yargs "^11.0.0"
 
-flow-remove-types@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/flow-remove-types/-/flow-remove-types-1.2.3.tgz#6131aefc7da43364bb8b479758c9dec7735d1a18"
-  integrity sha512-ypq/U3V+t9atYiOuSJd40tekCra03EHKoRsiK/wXGrsZimuum0kdwVY7Yv0HTaoXgHW1WiayomYd+Q3kkvPl9Q==
+flow-parser@^0.112.0:
+  version "0.112.0"
+  resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.112.0.tgz#938d7949068f147a196ebc2bd982ea066b024df5"
+  integrity sha512-sxjnwhR76B/fUN6n/XerYzn8R1HvtVo3SM8Il3WiZ4nkAlb2BBzKe1TSVKGSyZgD6FW9Bsxom/57ktkqrqmXGA==
+
+flow-remove-types@^2.112.0:
+  version "2.112.0"
+  resolved "https://registry.yarnpkg.com/flow-remove-types/-/flow-remove-types-2.112.0.tgz#9716790135bbb706ce76a406f15a0db2a8945a74"
+  integrity sha512-h3bwcfh41nR9kvlhZFr5ySGmzzOyG4VUsnN4OBl9R6anbWAiX4H5lPhKTwZ7AelWF8Rtqmw/Vnq+VLEMg7PdAw==
   dependencies:
-    babylon "^6.15.0"
+    flow-parser "^0.112.0"
+    pirates "^3.0.2"
     vlq "^0.2.1"
 
 for-in@^1.0.2:
@@ -2668,6 +2669,11 @@ nice-try@^1.0.4:
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
   integrity sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
 
+node-modules-regexp@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/node-modules-regexp/-/node-modules-regexp-1.0.0.tgz#8d9dbe28964a4ac5712e9131642107c71e90ec40"
+  integrity sha1-jZ2+KJZKSsVxLpExZCEHxx6Q7EA=
+
 node-pre-gyp@^0.6.39:
   version "0.6.39"
   resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.6.39.tgz#c00e96860b23c0e1420ac7befc5044e1d78d8649"
@@ -3055,6 +3061,13 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
+
+pirates@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/pirates/-/pirates-3.0.2.tgz#7e6f85413fd9161ab4e12b539b06010d85954bb9"
+  integrity sha512-c5CgUJq6H2k6MJz72Ak1F5sN9n9wlSlJyEnwvpm9/y3WB4E3pHBDT2c6PEiS1vyJvq2bUxUAIu0EGf8Cx4Ic7Q==
+  dependencies:
+    node-modules-regexp "^1.0.0"
 
 pkg-dir@^1.0.0:
   version "1.0.0"
