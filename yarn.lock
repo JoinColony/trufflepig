@@ -90,10 +90,10 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@colony/eslint-config-colony@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@colony/eslint-config-colony/-/eslint-config-colony-7.0.0.tgz#3371c84f86cd8024b5df57f44f344c50b692e7d0"
-  integrity sha512-6lYncfvTQlIjOPP8QYRlxF/SxlRPimqm4pzbAGvfZ9dchQMciNGifKmVJr1rZNDV2aVmp8HZ2rZ65AQl1VMvEQ==
+"@colony/eslint-config-colony@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@colony/eslint-config-colony/-/eslint-config-colony-8.0.1.tgz#55f5f3d3c02440992f5fe8adaaec70184f204481"
+  integrity sha512-9NF6G9gEn4orxTsny9t8NRZemsDhNFmPmxP+g2nxKs8jCDu0wLi7uJx3sljLdcVIu3AJTDIqwhOkrGoDjnWOrg==
 
 abbrev@1:
   version "1.1.1"
